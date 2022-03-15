@@ -6,6 +6,7 @@ FROM python:3.8.5-alpine
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV DEBUG 0
 
 
 # install dependencies
@@ -14,7 +15,8 @@ COPY ./requirements.txt .
 
 RUN apk add --update --no-cache postgresql-client python3-dev \
  libffi-dev jpeg-dev freetype-dev libjpeg-turbo-dev libpng-dev \
- curl jq
+ curl jq 
+
 RUN apk add --update --no-cache --virtual .tmp-build-deps \
  gcc g++ libc-dev linux-headers postgresql-dev musl-dev zlib \
  zlib-dev
