@@ -28,7 +28,7 @@ import os
 
 SECRET_KEY = os.environ.get('SECRET_KEY', default='foo')
 
-DEBUG = int(os.environ.get('DEBUG', default=1))
+DEBUG = int(os.environ.get('DEBUG', default=0))
 
 # ALLOWED_HOSTS = ['fixmycity.ga','fixmycity-api.herokuapp.com','127.0.0.1','localhost']
 ALLOWED_HOSTS=['*']
