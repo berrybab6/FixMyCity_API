@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  web:
+    volumes:
+      - /static:/static
+    env_file:
+      - .env
+    build:
+      context: .
+    command: bash -c "python manage.py collectstatic --no-input && python manage.py makemigrations && python manage.py migrate && gunicorn mydjango.wsgi -b 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    networks:
+      - django_network
+      # traefik_default    
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - ./static:/static
+    ports:
+      - "80:80"
+    networks:
+      - django_network
+    depends_on:
+      - web
+  
+
+volumes:
+  static:
+  # postgres_data:
+  
+networks:
+  django_network:
+#     external: true
+    driver: bridge
