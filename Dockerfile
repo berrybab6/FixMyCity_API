@@ -39,9 +39,12 @@ WORKDIR /app
 # COPY ./fixmycity_api .
 
 
-COPY ./entrypoint.sh /
-ENTRYPOINT [ "sh","/entrypoint.sh" ]
+# COPY ./entrypoint.sh /
+# ENTRYPOINT [ "sh","/entrypoint.sh" ]
  
+# collect static files
+RUN python manage.py collectstatic --noinput
+
 RUN adduser -D user
 RUN chown -R user:user .
 
