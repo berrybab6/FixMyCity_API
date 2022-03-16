@@ -156,16 +156,16 @@ from decouple import config
 #     'API_SECRET': "Td25NOCD3ztR2wjDx475BeQdh_w",
 # }
 
-# CLOUDINARY_STORAGE = {
-#     'CLOUD_NAME': config('CLOUD_NAME', default=""),
-#     'API_KEY': config('API_KEY', default=""),
-#     'API_SECRET': config('API_SECRET', default=""),
-# }
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get("CLOUD_NAME",default="foo1"),
-    'API_KEY': os.environ.get('API_KEY', default="foo2"),
-    'API_SECRET': os.environ.get('API_SECRET', default="foo3"),
+    'CLOUD_NAME': config('CLOUD_NAME', default=""),
+    'API_KEY': config('API_KEY', default=""),
+    'API_SECRET': config('API_SECRET', default=""),
 }
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': os.environ.get("CLOUD_NAME",default="foo1"),
+#     'API_KEY': os.environ.get('API_KEY', default="foo2"),
+#     'API_SECRET': os.environ.get('API_SECRET', default="foo3"),
+# }
 
 # os.environ.get("Key")
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
