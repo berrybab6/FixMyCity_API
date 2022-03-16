@@ -16,6 +16,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 import os
+import cloudinary
+import cloudinary_storage
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -41,7 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "corsheaders",
+    'corsheaders',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
@@ -142,6 +146,29 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
+
+# Cloudinary stuff
+from decouple import config
+
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': "fixmy",
+#     'API_KEY': "643632981747267",
+#     'API_SECRET': "Td25NOCD3ztR2wjDx475BeQdh_w",
+# }
+
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': config('CLOUD_NAME', default=""),
+#     'API_KEY': config('API_KEY', default=""),
+#     'API_SECRET': config('API_SECRET', default=""),
+# }
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get("CLOUD_NAME",default="foo1"),
+    'API_KEY': os.environ.get('API_KEY', default="foo2"),
+    'API_SECRET': os.environ.get('API_SECRET', default="foo3"),
+}
+
+# os.environ.get("Key")
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_URL = '/static/'
