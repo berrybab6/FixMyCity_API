@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 
+from datetime import timedelta
+from pathlib import Path
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 import dj_database_url
@@ -32,7 +35,7 @@ import cloudinary_storage
 
 SECRET_KEY = os.environ.get('SECRET_KEY', default='foo')
 
-DEBUG = int(os.environ.get('DEBUG', default=0))
+DEBUG = int(os.environ.get('DEBUG', default=1))
 
 # ALLOWED_HOSTS = ['fixmycity.ga','fixmycity-api.herokuapp.com','127.0.0.1','localhost']
 ALLOWED_HOSTS=['*']
@@ -48,6 +51,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'cloudinary',
     'cloudinary_storage',
+    'rest_framework',
+    'rest_framework_simplejwt',
     'accounts.apps.AccountsConfig',
 ]
 
@@ -62,6 +67,15 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+REST_FRAMEWORK  = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated', # make all endpoints private
+    )
+    }
 
 ROOT_URLCONF = 'fixmycity_api.urls'
 
@@ -177,12 +191,15 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = 'media'
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATIC_URL = '/static/'
 
+# Extra places for collectstatic to find static files.
+# STATICFILES_DIRS = (
+#     os.path.join(BASE_DIR, 'static'),
+# )
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Extra places for collectstatic to find static files.
@@ -196,3 +213,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
+    'TOKEN_TYPE_CLAIM': 'access'
+}
