@@ -1,3 +1,4 @@
+from pickle import TRUE
 from django.db import models
 
 # Create your models here.
@@ -58,7 +59,7 @@ def upload_to(instance, filename):
 
 # Create your models here.
 class SuperAdmin(AbstractUser,PermissionsMixin):
-    full_name = models.CharField(max_length=255 , null=False)
+    full_name = models.CharField(max_length=255 , null=True)
     username = models.CharField(max_length=255 , null=False , unique=True)
     image = models.ImageField(upload_to=upload_to , null= True )
     created_at = models.DateTimeField(auto_now=True)
