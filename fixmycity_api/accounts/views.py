@@ -1,13 +1,15 @@
 
 from django.shortcuts import render
-from rest_framework import serializers
+from rest_framework import generics, status, permissions, serializers, viewsets
+
+# from rest_framework import serializers
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-
-from .serializers import LoginSerializer, SectorAdminSerializer, UserSerializer
+from django.http import JsonResponse
+from .serializers import LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer
 from .utils import Utils
-from .models import Role, User,SectorAdmin
+from .models import Role, Sector, User,SectorAdmin
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
 
 # Create your views here.
@@ -27,15 +29,6 @@ class RegisterView(APIView):
         user.save()
         serializer = SectorAdminSerializer(user)
         
-        # Check if the data is valid  and if not raise exception
-        # serializer.is_valid(raise_exception=True)
-
-        # save to DB
-        # serializer.save()
-        
-        # user = User.objects.get(username=username)
-        # token = Utils.encode_token(user)
-
         return Response({"data":serializer.data})
 
 class EditProfile(APIView):
@@ -55,18 +48,31 @@ class EditProfile(APIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny, ]
+    queryset = User.objects.all()
+    serializer_class = LoginSerializer
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
 
         user = Utils.authenticate_user(serializer.validated_data)
+        # queryset = user
         serializedUser = UserSerializer(user)
         token = Utils.encode_token(user)
         
         return Response({"data":serializedUser.data, "token":token})
+        
+    def get_queryset(self):
+        return super().get_queryset()
+class SectorView(viewsets.ModelViewSet):
+    
+    serializer_class = SectorSerializer
+    queryset = Sector.objects.all()
+    permission_classes = [IsAdminUser, ]
 
 
+    def get_queryset(self):
+        return super().get_queryset()
 
 class TestView(APIView):
     def get(self, request):
