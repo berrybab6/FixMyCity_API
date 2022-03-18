@@ -8,7 +8,7 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 import random
 # from graphql_relay import to_global_id
-from accounts.managers import UserManager
+# from accounts.managers import UserManager
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
