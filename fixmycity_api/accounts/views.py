@@ -5,35 +5,42 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 
-from .serializers import LoginSerializer, UserSerializer
+from .serializers import LoginSerializer, SectorAdminSerializer, UserSerializer
 from .utils import Utils
-from .models import SuperAdmin
+from .models import Role, User,SectorAdmin
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
 
 # Create your views here.
 
+
 class RegisterView(APIView):
-    permission_classes = [AllowAny, ]
+    permission_classes = [IsAdminUser, ]
+    serializer_class = [SectorAdminSerializer]
     def post(self,request):
         data = request.data
-        username = data['username']
-
-        serializer = UserSerializer(data = data)
+        username_ = data['username']
+        password_ = data['password']
+        email_ = data['email']
+        full_name_ = data['full_name']
+        role = Role.objects.get(id=2)
+        user = SectorAdmin(username=username_,password=password_,email=email_, full_name=full_name_, roles=role,main_sector=True )
+        user.save()
+        serializer = SectorAdminSerializer(user)
         
         # Check if the data is valid  and if not raise exception
-        serializer.is_valid(raise_exception=True)
+        # serializer.is_valid(raise_exception=True)
 
         # save to DB
-        serializer.save()
+        # serializer.save()
         
-        user = SuperAdmin.objects.get(username=username)
-        token = Utils.encode_token(user)
+        # user = User.objects.get(username=username)
+        # token = Utils.encode_token(user)
 
-        return Response({"data":serializer.data, "token":token})
+        return Response({"data":serializer.data})
 
 class EditProfile(APIView):
     def put(self, request,id):
-        user = SuperAdmin.objects.get(id=id)
+        user = User.objects.get(id=id)
 
         data = request.data.dict()
 
