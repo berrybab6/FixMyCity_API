@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate
-from .models import SuperAdmin
+from .models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers
 import django.contrib.auth.password_validation as validators
@@ -23,7 +23,7 @@ class Utils:
         username = validated_data['username']
         password = validated_data['password']
         
-        user = SuperAdmin.objects.filter(username=username).first()
+        user = User.objects.filter(username=username).first()
         if user and authenticate(username = username, password= password):
             return user
             

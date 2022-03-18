@@ -1,4 +1,5 @@
 from django.contrib import admin
-from .models import SuperAdmin
+from .models import User, SectorAdmin
 # # Register your models here.
-admin.site.register(SuperAdmin)
+admin.site.register(User)
+admin.site.register(SectorAdmin)
