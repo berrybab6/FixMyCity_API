@@ -7,17 +7,20 @@ from django.conf.urls.static import static
 # # from graphene_file_upload.django import FileUploadGraphQLView
 
 from django.urls import include
-from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestView,SectorView
+from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestView,SectorView, RoleView
 #
 from rest_framework import routers
 app_name = 'accounts'
 router = routers.DefaultRouter()
 router.register('',SectorView,basename='Sector')
+# router.register('role',SectorView,basename='Role')
+
 # router.register('login',LoginView,basename='User')
 
 urlpatterns = [
     path('register/', RegisterView.as_view()),
     path('sector/',include(router.urls)),
+    path("roles/", RoleView.as_view(), name="User by role"),
 
     path('login/', LoginView.as_view()),
     path('api/', include('rest_framework.urls')),
