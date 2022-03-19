@@ -53,7 +53,8 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'rest_framework',
     'rest_framework_simplejwt',
-    'accounts.apps.AccountsConfig',
+    # 'accounts.apps.AccountsConfig',
+    'accounts',
     'users'
 ]
 
@@ -111,7 +112,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'fixmycity',
         'USER': 'postgres',
-        'PASSWORD': 'new_password',
+        'PASSWORD': 'test123',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
