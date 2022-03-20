@@ -16,7 +16,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticate
 
 
 class RegisterView(APIView):
-    permission_classes = [IsAdminUser, ]
+    # permission_classes = [IsAdminUser, ]
     serializer_class = [SectorAdminSerializer]
     def post(self,request):
         data = request.data

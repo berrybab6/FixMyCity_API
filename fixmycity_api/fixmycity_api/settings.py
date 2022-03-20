@@ -55,7 +55,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     # 'accounts.apps.AccountsConfig',
     'accounts',
-    'users'
+    'users',
+    'reports'
+    
 ]
 
 MIDDLEWARE = [
@@ -73,12 +75,12 @@ MIDDLEWARE = [
 REST_FRAMEWORK  = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
        
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         
         
-        # 'rest_framework.permissions.IsAuthenticated', # make all endpoints private
+         'rest_framework.permissions.IsAuthenticated', # make all endpoints private
     )
     }
 
@@ -110,7 +112,7 @@ AUTH_USER_MODEL = 'accounts.User'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fixmycity',
+        'NAME': 'fixmy',
         'USER': 'postgres',
         'PASSWORD': 'test123',
         'HOST': '127.0.0.1',

@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate
 from .models import User
+from users.models import User as users
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers
 import django.contrib.auth.password_validation as validators
@@ -29,3 +30,20 @@ class Utils:
             
         
         raise serializers.ValidationError("Invalid username/password. Please try again!")
+    
+    
+    @staticmethod
+    def authenticate_custome_user(validated_data):
+        
+        phone_number = validated_data['phone_number']
+        print(phone_number)
+        # password = validated_data['password']
+        
+        user = users.objects.filter(phone_number=phone_number).first()
+        
+        if user :
+            print(user)
+            return user
+            
+        
+        raise serializers.ValidationError("Invalid phone number. Please try again!")
