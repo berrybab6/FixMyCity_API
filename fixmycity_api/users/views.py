@@ -9,6 +9,7 @@ from rest_framework import permissions, generics, status
 from django.contrib.auth import login
 from accounts.utils import Utils
 from django.contrib.auth import authenticate
+from rest_framework.permissions import AllowAny
 
 
 def send_otp(phone):
@@ -31,6 +32,7 @@ def send_otp(phone):
     
     
 class ValidatePhoneSendOTP(APIView):
+    permission_classes = [AllowAny, ]
     '''
     This class view takes phone number and if it doesn't exists already then it sends otp for
     first coming phone numbers'''
@@ -126,6 +128,8 @@ class ValidatePhoneSendOTP(APIView):
             
             
 class ValidateOTP(APIView):
+    permission_classes = [AllowAny, ]
+
     '''
     If you have received otp, post a request with phone and that otp and you will be redirected to set the password
     
@@ -168,6 +172,7 @@ class ValidateOTP(APIView):
             
             
 class ValidateLoginOTP(APIView):
+    permission_classes = [AllowAny, ]
     '''
     If you have received otp, post a request with phone and that otp and you will be redirected to set the password
     
@@ -215,6 +220,7 @@ class ValidateLoginOTP(APIView):
 
 
 class Register(APIView):
+    permission_classes = [AllowAny, ]
     '''Takes phone  ,first name and lastname  and creates a new user only if otp was verified and phone is new'''
 
     def post(self, request, *args, **kwargs):
@@ -241,12 +247,20 @@ class Register(APIView):
                         serializer = RegistorUserSerializer(data=Temp_data)
                         serializer.is_valid(raise_exception=True)
                         user = serializer.save()
+                        
+                        user = Utils.authenticate_custome_user(serializer.validated_data)
+                        print(user)
+        # queryset = user
+                        serializedUser = LoginSerializer(user)
+                        token = Utils.encode_token(user)
+        
+        # return Response({"data":serializedUser.data, "token":token})
                         # user.save()
 
                         old.delete()
                         return Response({
-                            'status' : True, 
-                            'detail' : 'User has been created successfully.'
+                            'data' : serializedUser.data, 
+                            'token' : token
                         })
 
                     else:

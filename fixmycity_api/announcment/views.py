@@ -15,7 +15,7 @@ from .permissions import IsSectorAdmin
 
 
 class AnnouncementAPIView(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated, )
+    # permission_classes = (IsAuthenticated, )
     serializer_class = AnnouncementSerializer
     def get_queryset(self):
         announcment = Announcement.objects.all().order_by("-date")

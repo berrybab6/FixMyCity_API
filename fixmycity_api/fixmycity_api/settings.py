@@ -22,7 +22,8 @@ import dj_database_url
 
 import os
 import cloudinary
-import cloudinary_storage
+import cloudinary.uploader
+import cloudinary.api
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -193,11 +194,18 @@ from decouple import config
 #     'API_SECRET': "Td25NOCD3ztR2wjDx475BeQdh_w",
 # }
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': config('CLOUD_NAME', default=""),
-    'API_KEY': config('API_KEY', default=""),
-    'API_SECRET': config('API_SECRET', default=""),
-}
+cloudinary.config(
+    cloud_name="shetechs",
+    api_key="171174673812633",
+    api_secret="1Adci2An4RTqgFakBpoF5vMz63I"
+)
+
+
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': config('CLOUD_NAME', default=""),
+#     'API_KEY': config('API_KEY', default=""),
+#     'API_SECRET': config('API_SECRET', default=""),
+# }
 # CLOUDINARY_STORAGE = {
 #     'CLOUD_NAME': os.environ.get("CLOUD_NAME",default="foo1"),
 #     'API_KEY': os.environ.get('API_KEY', default="foo2"),
