@@ -1,3 +1,4 @@
+
 from pickle import TRUE
 from django.conf import settings
 from django.db import models
@@ -94,7 +95,7 @@ class CustomUserManager(BaseUserManager):
 def upload_to(instance, filename):
     return '{datetime}{filename}'.format(datetime=datetime.now(), filename=filename)
 class User(AbstractBaseUser, PermissionsMixin):
-    roles = models.ForeignKey(Role, on_delete=models.CASCADE,db_column='rolesId')
+    roles = models.ForeignKey(Role, on_delete=models.CASCADE,db_column='rolesId', null=True)
 
 # class Admins(models.Model):
     # roles = models.ManyToManyField(Role)
@@ -167,3 +168,4 @@ class SectorAdmin(User):
     def is_main_sector(self):
         return self.main_sector
     objects = CustomUserManager()
+
