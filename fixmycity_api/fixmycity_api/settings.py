@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     # 'accounts.apps.AccountsConfig',
     'accounts',
     'users',
-    'reports'
+    'reports',
+    'announcment'
     
 ]
 
@@ -80,7 +81,7 @@ REST_FRAMEWORK  = {
     'DEFAULT_PERMISSION_CLASSES': (
         
         
-         'rest_framework.permissions.IsAuthenticated', # make all endpoints private
+        #  'rest_framework.permissions.IsAuthenticated', # make all endpoints private
     )
     }
 
