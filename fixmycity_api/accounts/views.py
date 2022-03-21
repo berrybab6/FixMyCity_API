@@ -7,7 +7,11 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from django.http import JsonResponse
+<<<<<<< HEAD
 from .serializers import LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer
+=======
+from .serializers import LoginSerializer, RoleSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer
+>>>>>>> db4b4432df78eec5426ec1963c5f20c2a5cc687b
 from .utils import Utils
 from .models import Role, Sector, User,SectorAdmin
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
@@ -28,7 +32,7 @@ class RegisterView(APIView):
         user = SectorAdmin(username=username_,password=password_,email=email_, full_name=full_name_, roles=role,main_sector=True )
         user.save()
         serializer = SectorAdminSerializer(user)
-        
+
         return Response({"data":serializer.data})
 
 class EditProfile(APIView):
@@ -92,6 +96,34 @@ class SectorView(viewsets.ModelViewSet):
     queryset = Sector.objects.all()
     permission_classes = [IsAdminUser, ]
 
+
+    def get_queryset(self):
+        return super().get_queryset()
+class RoleView(generics.GenericAPIView):
+    
+    serializer_class = RoleSerializer
+    queryset = Role.objects.all()
+    permission_classes = [AllowAny, ]
+
+    def post(self,request):
+
+        ad = Role.objects.get_or_create(id=1)
+        ser1 = RoleSerializer(ad)
+
+        sec = Role.objects.get_or_create(id=2)
+        ser2 = RoleSerializer(sec)
+    
+        custom = Role.objects.get_or_create(id=3)
+        ser3 = RoleSerializer(custom)
+        
+        counts = Role.objects.count()
+        if counts>=3:
+            roles = Role.objects.all()
+            ser = RoleSerializer(roles,many=True)
+            return JsonResponse({"Roles":ser.data,"message":"All Roles are already created"})
+        else: 
+            return JsonResponse({"role1":ser1.data,"role2":ser2.data,"role3":ser3.data,"count":counts}) 
+        
 
     def get_queryset(self):
         return super().get_queryset()
