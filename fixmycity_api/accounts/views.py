@@ -7,11 +7,8 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from django.http import JsonResponse
-<<<<<<< HEAD
 from .serializers import LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer
-=======
 from .serializers import LoginSerializer, RoleSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer
->>>>>>> db4b4432df78eec5426ec1963c5f20c2a5cc687b
 from .utils import Utils
 from .models import Role, Sector, User,SectorAdmin
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
@@ -28,8 +25,10 @@ class RegisterView(APIView):
         password_ = data['password']
         email_ = data['email']
         full_name_ = data['full_name']
+        sector_= data['sector']
+        sec= Sector.objects.get(id=sector_)
         role = Role.objects.get(id=2)
-        user = SectorAdmin(username=username_,password=password_,email=email_, full_name=full_name_, roles=role,main_sector=True )
+        user = SectorAdmin(username=username_,password=password_,email=email_, full_name=full_name_, roles=role,main_sector=True,sector=sec)
         user.save()
         serializer = SectorAdminSerializer(user)
 
@@ -94,7 +93,7 @@ class SectorView(viewsets.ModelViewSet):
     
     serializer_class = SectorSerializer
     queryset = Sector.objects.all()
-    permission_classes = [IsAdminUser, ]
+    permission_classes = [AllowAny, ]
 
 
     def get_queryset(self):

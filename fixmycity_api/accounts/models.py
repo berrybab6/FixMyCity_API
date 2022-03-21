@@ -95,7 +95,7 @@ class CustomUserManager(BaseUserManager):
 def upload_to(instance, filename):
     return '{datetime}{filename}'.format(datetime=datetime.now(), filename=filename)
 class User(AbstractBaseUser, PermissionsMixin):
-    roles = models.ForeignKey(Role, on_delete=models.CASCADE,db_column='rolesId', null=True)
+    roles = models.ForeignKey(Role, on_delete=models.CASCADE,db_column='rolesId')
 
 # class Admins(models.Model):
     # roles = models.ManyToManyField(Role)

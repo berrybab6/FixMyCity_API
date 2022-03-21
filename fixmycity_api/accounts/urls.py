@@ -7,11 +7,8 @@ from django.conf.urls.static import static
 # # from graphene_file_upload.django import FileUploadGraphQLView
 
 from django.urls import include
-<<<<<<< HEAD
 from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestView,SectorView , LoginSectorAdminView
-=======
 from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestView,SectorView, RoleView
->>>>>>> db4b4432df78eec5426ec1963c5f20c2a5cc687b
 #
 from rest_framework import routers
 app_name = 'accounts'
