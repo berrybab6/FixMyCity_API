@@ -1,21 +1,25 @@
+from email import message
 from django.shortcuts import render
 from rest_framework.views import APIView
 from .models import Announcement
 from .serializers import AnnouncementSerializer
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated , BasePermission , SAFE_METHODS
 from rest_framework import serializers, viewsets
 from .permissions import IsSectorAdmin
 
 
 
 
+
+
 class AnnouncementAPIView(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated, IsSectorAdmin)
+    permission_classes = (IsAuthenticated, )
     serializer_class = AnnouncementSerializer
     def get_queryset(self):
         announcment = Announcement.objects.all().order_by("-date")
+        print(announcment)
         return announcment
     
     def create(self, request):
@@ -48,9 +52,10 @@ class AnnouncementAPIView(viewsets.ModelViewSet):
         id = self.kwargs.get("pk")
         try:
            
-            announcment = Announcement.objects.get(id=id)
+            announcment = Announcement.objects.filter(sectoradmin__sector_user=self.request.user).get(id=id)
             announcmentserializer = AnnouncementSerializer(announcment, data=request.data)
-            if announcmentserializer.is_valid():
+            if announcmentserializer.is_valid() :
+                
                 announcmentserializer.save()
                 return Response(announcmentserializer.data, status=status.HTTP_200_OK)
             return Response(announcmentserializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -65,7 +70,7 @@ class AnnouncementAPIView(viewsets.ModelViewSet):
     def partial_update(self, request, pk=None):
         id = self.kwargs.get("pk")
         try:
-            announcment = Announcement.objects.get(id=id)
+            announcment = Announcement.objects.filter(sectoradmin__sector_user=self.request.user).get(id=id)
             anouncmentserializer = AnnouncementSerializer(announcment, data=request.data, partial=True)
             if anouncmentserializer.is_valid():
                 anouncmentserializer.save()
@@ -81,7 +86,7 @@ class AnnouncementAPIView(viewsets.ModelViewSet):
     def destroy(self, request, pk=None):
         id = self.kwargs.get("pk")
         try:
-            announcment = Announcement.objects.get(pk=id)
+            announcment = Announcement.objects.filter(sectoradmin__sector_user=self.request.user).get(pk=id)
             announcment.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Announcement.DoesNotExist:

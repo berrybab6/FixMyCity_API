@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from django.http import JsonResponse
-from .serializers import LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer
+from .serializers import LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer
 from .utils import Utils
 from .models import Role, Sector, User,SectorAdmin
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
@@ -16,7 +16,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticate
 
 
 class RegisterView(APIView):
-    # permission_classes = [IsAdminUser, ]
+    permission_classes = [IsAdminUser, ]
     serializer_class = [SectorAdminSerializer]
     def post(self,request):
         data = request.data
@@ -64,6 +64,28 @@ class LoginView(APIView):
         
     def get_queryset(self):
         return super().get_queryset()
+    
+class LoginSectorAdminView(APIView):
+    permission_classes = [AllowAny, ]
+    queryset = User.objects.all()
+    serializer_class = LoginSectorAdminSerializer
+    def post(self, request):
+        serializer = LoginSectorAdminSerializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+
+        user = Utils.authenticate_sector_admin(serializer.validated_data)
+        # queryset = user
+        serializedUser = SectorAdminSerializer(user)
+        token = Utils.encode_token(user)
+        
+        return Response({"data":serializedUser.data, "token":token})
+        
+    def get_queryset(self):
+        return super().get_queryset()
+    
+    
+    
 class SectorView(viewsets.ModelViewSet):
     
     serializer_class = SectorSerializer

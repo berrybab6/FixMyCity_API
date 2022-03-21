@@ -19,6 +19,11 @@ class SectorAdminSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(required=True, write_only=True)
     username = serializers.CharField(required=True)
+    
+
+class LoginSectorAdminSerializer(serializers.Serializer):
+    password = serializers.CharField(required=True, write_only=True)
+    email = serializers.CharField(required=True)
 
     # def create(self, validated_data):
         # return User.objects.create(**validated_data)

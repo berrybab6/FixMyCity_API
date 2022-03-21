@@ -22,10 +22,14 @@
 from rest_framework import routers
 from .views import AnnouncementAPIView
 from django.urls import path, include
+
+app_name = 'announcment'
+
+
 router = routers.DefaultRouter()
 
 router.register('announcment', viewset=AnnouncementAPIView, basename='announcment')
 
 urlpatterns = [
-    path('', include(router.urls))
+    path('', include(router.urls ))
 ]

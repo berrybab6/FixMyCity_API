@@ -1,5 +1,6 @@
+import email
 from django.contrib.auth import authenticate
-from .models import User
+from .models import SectorAdmin, User
 from users.models import User as users
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers
@@ -30,6 +31,27 @@ class Utils:
             
         
         raise serializers.ValidationError("Invalid username/password. Please try again!")
+    
+    
+    
+    
+    
+    @staticmethod
+    def authenticate_sector_admin(validated_data):
+        # from .models import User
+        email = validated_data['email']
+        password = validated_data['password']
+        
+        user = SectorAdmin.objects.filter(email=email).first()
+        if user:
+            return user
+            
+        
+        raise serializers.ValidationError("Invalid email/password. Please try again!")
+    
+    
+    
+    
     
     
     @staticmethod
