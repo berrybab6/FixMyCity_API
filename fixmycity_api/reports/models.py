@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import Sector
-from users.models import User
+from accounts.models import CustomUser
 from django.contrib.postgres.fields import ArrayField
 
 
@@ -22,7 +22,7 @@ class Location(models.Model):
 
 class Report(models.Model):
     id          = models.AutoField(primary_key=True)
-    userId      = models.ForeignKey(User, on_delete=models.CASCADE , null=True)
+    userId      = models.ForeignKey(CustomUser, on_delete=models.CASCADE , null=True)
     sectorId    = models.ForeignKey(Sector, on_delete=models.CASCADE , null=True)
     image       = models.CharField(max_length = 255  , null=True , blank=True)
     tag         = ArrayField(models.CharField(max_length=200), blank=True)

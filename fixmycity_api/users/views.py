@@ -2,7 +2,7 @@ import  random as rand
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from users.models import User, PhoneOTP
+from accounts.models import CustomUser, PhoneOTP
 from rest_framework.views import APIView
 from .serializers import RegistorUserSerializer , LoginUserSerializer , LoginSerializer
 from rest_framework import permissions, generics, status
@@ -41,7 +41,7 @@ class ValidatePhoneSendOTP(APIView):
         phone_number = request.data.get('phone_number')
         if phone_number:
             phone = str(phone_number)
-            user = User.objects.filter(phone_number__iexact = phone)
+            user = CustomUser.objects.filter(phone_number__iexact = phone)
             if user.exists():
                 otp = send_otp(phone)
                 print(phone, otp)
@@ -231,7 +231,7 @@ class Register(APIView):
 
         if phone_number and first_name and last_name:
             phone_number = str(phone_number)
-            user = User.objects.filter(phone_number__iexact = phone_number)
+            user = CustomUser.objects.filter(phone_number__iexact = phone_number)
             if user.exists():
                 return Response({'status': False, 'detail': 'Phone Number already have account associated.'})
             else:
@@ -242,13 +242,15 @@ class Register(APIView):
                     if validated:
                         Temp_data = {'phone_number': phone_number, 
                                      'first_name': first_name,
-                                     'last_name': last_name}
+                                     'last_name': last_name
+                                     }
 
                         serializer = RegistorUserSerializer(data=Temp_data)
                         serializer.is_valid(raise_exception=True)
                         user = serializer.save()
                         
                         user = Utils.authenticate_custome_user(serializer.validated_data)
+                        
                         print(user)
         # queryset = user
                         serializedUser = LoginSerializer(user)
@@ -294,7 +296,7 @@ class Register(APIView):
 
 class LoginView(APIView):
     permission_classes = (permissions.AllowAny,)
-    queryset = User.objects.all()
+    queryset = CustomUser.objects.all()
     serializer_class = LoginSerializer
     def post(self, request):
         serializer = LoginSerializer(data=request.data)

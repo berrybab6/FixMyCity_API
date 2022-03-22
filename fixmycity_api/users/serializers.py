@@ -1,18 +1,19 @@
 from rest_framework import serializers
-from .models import User
+from accounts.models import CustomUser , Role
 from django.contrib.auth import authenticate
 
 
 
 class RegistorUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomUser
         fields = ('first_name', 'last_name','phone_number')
         read_only_fields = ['id']
         
 
     def create(self, validated_data):
-        user = User(first_name= validated_data['first_name'], last_name= validated_data['last_name'], phone_number= validated_data['phone_number'] )
+        role = Role.objects.get(id=3)
+        user = CustomUser(first_name= validated_data['first_name'], last_name= validated_data['last_name'], phone_number= validated_data['phone_number'] , roles = role )
         user.save()
         return user
     
@@ -28,7 +29,7 @@ class LoginUserSerializer(serializers.Serializer):
         # password = attrs.get('password')
 
         if phone_number:
-            if User.objects.filter(phone_number=phone_number).exists():
+            if CustomUser.objects.filter(phone_number=phone_number).exists():
                 print("i am here")
                 
                 user = authenticate(request=self.context.get('request'),
