@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated , BasePermission , SAFE_METHODS
 from rest_framework import serializers, viewsets
 from rest_framework.pagination import PageNumberPagination
-from .permissions import IsSectorAdmin
+from permissions import IsSectorAdmin
 
 
 
