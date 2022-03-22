@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated , BasePermission , SAFE_METHODS
 from rest_framework import serializers, viewsets
+from rest_framework.pagination import PageNumberPagination
 from .permissions import IsSectorAdmin
 
 
@@ -15,8 +16,9 @@ from .permissions import IsSectorAdmin
 
 
 class AnnouncementAPIView(viewsets.ModelViewSet):
-    # permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated, )
     serializer_class = AnnouncementSerializer
+    pagination_class = PageNumberPagination
     def get_queryset(self):
         announcment = Announcement.objects.all().order_by("-date")
         print(announcment)

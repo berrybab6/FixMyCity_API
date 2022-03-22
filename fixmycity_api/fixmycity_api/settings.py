@@ -84,7 +84,15 @@ REST_FRAMEWORK  = {
         
         
         #  'rest_framework.permissions.IsAuthenticated', # make all endpoints private
-    )
+    ),
+     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+     'PAGE_SIZE': 10
+        
+        
+        
+       
+    
+    
     }
 
 ROOT_URLCONF = 'fixmycity_api.urls'
