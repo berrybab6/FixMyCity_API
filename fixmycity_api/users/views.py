@@ -10,6 +10,7 @@ from django.contrib.auth import login
 from accounts.utils import Utils
 from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny
+from twilio.rest import Client
 
 
 def send_otp(phone):
@@ -21,6 +22,17 @@ def send_otp(phone):
     if phone:
         key = rand.randint(999, 9999) 
         return key
+        # account_sid = 'AC5803681f906628f43b3be7c892c7f79d'
+        # auth_token = 'c5c89626159a9144f39025670461a867'
+        # client = Client(account_sid, auth_token)
+        # message = client.messages.create(
+        #                       from_='+12544525448',
+        #                       body ='This is the ship that made the Kessel Run in fourteen parsecs?',
+        #                       to ='+251962782800'
+        #                   )
+        
+        # print(message.status)
+        
     else:
         return False
     

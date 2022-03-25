@@ -29,7 +29,7 @@ class Report(models.Model):
     description = models.CharField(max_length = 255, null = True)
     postedAt    = models.DateTimeField(auto_now=True , null=True)
     resolvedAt  = models.DateTimeField(auto_now=True ,null=True )
-    noOfLikes   = ArrayField(models.IntegerField(default=0), blank=True , null=True )
+    noOfLikes   = models.ManyToManyField(CustomUser , related_name='report_posts')
     spamStatus  = models.BooleanField(default=False)
     state       = models.BooleanField(default=False)
     location    = models.ForeignKey(Location, on_delete=models.CASCADE)
@@ -37,6 +37,10 @@ class Report(models.Model):
     
     def __str__(self):
         return self.description
+    
+    
+    def number_of_likes(self):
+        return self.noOfLikes.count()
     
     
     

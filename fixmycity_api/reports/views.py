@@ -1,5 +1,5 @@
 import re
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView
 from .models import Report
 from .serializers import ReportSerializer
@@ -9,6 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers, viewsets
 from rest_framework.pagination import PageNumberPagination
 from  permissions import IsSectorAdmin , IsCustomUser
+from django.contrib.auth.decorators import login_required 
+from django.utils.decorators import method_decorator 
 
 
 
@@ -86,9 +88,27 @@ class ReportAPIView(viewsets.ModelViewSet):
         elif self.action in ['create']:
             self.permission_classes = [IsAuthenticated , IsCustomUser ]
         return super().get_permissions()
+    
+    
 
-    
-    
+
+
+class LikeReportView(APIView):
+    permission_classes = (IsAuthenticated, IsCustomUser)
+    def post(self, request, *args, **kwargs):
+        id = self.kwargs.get("pk")
+        report = Report.objects.get(id=id)
+        if report.noOfLikes.filter(id=request.user.id).exists():
+            report.noOfLikes.remove(request.user)
+            return Response({"msg": 'you liked the report'}, status=status.HTTP_201_CREATED)
+            
+        else:
+            report.noOfLikes.add(request.user.id)
+            return Response({"msg": 'you disliked the report'}, status=status.HTTP_201_CREATED)
+
+        
+        
+        
     
     
     

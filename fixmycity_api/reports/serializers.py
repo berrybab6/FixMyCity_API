@@ -6,9 +6,15 @@ from users.serializers import RegistorUserSerializer
 
 
 class ReportSerializer(serializers.ModelSerializer):
+    like_count = serializers.SerializerMethodField()
     class Meta:
         model = Report
         fields = "__all__"
+        
+    def get_like_count(self, obj):
+        return obj.noOfLikes.count()
+    
+    
         
     
     def to_representation(self, instance):

@@ -173,7 +173,7 @@ class SectorAdmin(User):
     
 class CustomUser(User):
     phone_regex      = RegexValidator( regex   =r'^\+?1?\d{9,14}$', message ="Phone number must be entered in the format: '+9xxxxxxxxx'. Up to 10 digits allowed.")
-    phone_number     = models.CharField(validators=[phone_regex], max_length=10, unique=True)
+    phone_number     = models.CharField(validators=[phone_regex], max_length=13, unique=True)
     first_name       = models.CharField(max_length = 255, null = True)
     last_name        = models.CharField(max_length = 255, null = True)
     ProfileUrl       = models.CharField(max_length = 255  , null=True , blank=True)
