@@ -1,5 +1,3 @@
-import re
-from django.shortcuts import get_object_or_404, render
 from rest_framework.views import APIView
 from .models import Report
 from .serializers import ReportSerializer
@@ -8,9 +6,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers, viewsets
 from rest_framework.pagination import PageNumberPagination
-from  permissions import IsSectorAdmin , IsCustomUser
-from django.contrib.auth.decorators import login_required 
-from django.utils.decorators import method_decorator 
+from permissions import IsSectorAdmin , IsCustomUser, IsSuperAdmin
+from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.db.models.functions import Distance
+
 
 
 
@@ -18,40 +17,46 @@ class ReportAPIView(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,IsSectorAdmin )
     serializer_class = ReportSerializer
     pagination_class = PageNumberPagination
+    queryset = Report.objects.all().order_by("-postedAt")
     def get_queryset(self):
         report = Report.objects.all().order_by("-postedAt")
-        print(report)
         return report
     
-    def create(self, request):
+    def create(self, request, **kwargs):
+        latitude = request.data['lat']
+        longtiude = request.data['lng']
+        pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude))
         serializer_obj = ReportSerializer(data=request.data)
         
         if serializer_obj.is_valid():
-            serializer_obj.save()
+            serializer_obj.save(location=pnt)
             return Response({"msg": 'Data Created'}, status=status.HTTP_201_CREATED)
         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
     
     
     
     
+
     
-    
-    
-    def retrieve(self, request, *args, **kwargs):
-        params = kwargs
-        print(params["pk"])
-        report = Report.objects.all()
+    def list(self, request, *args, **kwargs):
+        report = Report.objects.all().order_by("-postedAt")
         serializer = ReportSerializer(report , many= True)
+        qs = super().get_queryset()
+      
+        latitude = self.request.query_params.get('lat', None)
+        longtiude = self.request.query_params.get('lng', None)
+        if latitude and longtiude:
+            pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude) , srid=4326)
+            qs = qs.annotate(distance= Distance('location' , pnt)).filter(distance__lte=3000).order_by("-postedAt")
+            serializer = ReportSerializer(qs , many= True)
         return Response(serializer.data)
-    
-    
-    
-    
-    
-    
-    
         
-        
+
+    
+    
+    
+    
+    
     def partial_update(self, request, pk=None):
         id = self.kwargs.get("pk")
         try:
@@ -83,7 +88,7 @@ class ReportAPIView(viewsets.ModelViewSet):
         """Set custom permissions for each action."""
         if self.action in [ 'partial_update', 'destroy', ]:
             self.permission_classes = [IsAuthenticated, IsSectorAdmin]
-        elif self.action in ['list' , 'retrieve']:
+        elif self.action in ['list' ,]:
             self.permission_classes = [IsAuthenticated  ]
         elif self.action in ['create']:
             self.permission_classes = [IsAuthenticated , IsCustomUser ]
@@ -105,6 +110,21 @@ class LikeReportView(APIView):
         else:
             report.noOfLikes.add(request.user.id)
             return Response({"msg": 'you disliked the report'}, status=status.HTTP_201_CREATED)
+        
+        
+class ChartDataView(APIView):
+    permission_classes = (IsAuthenticated , IsSectorAdmin)
+    def get(self , request , format=None):
+        recived_count = Report.objects.all().count()
+        resolved_count  = Report.objects.filter(state=True).count()
+        unresolved_count = Report.objects.filter(state=False).count()
+        labeles = ["Recived" , "Resolved" , "UnResolved"]
+        default_items = [recived_count , resolved_count , unresolved_count]
+        data = {
+            "labels" : labeles,
+            "default": default_items
+        }
+        return Response(data)
 
         
         
