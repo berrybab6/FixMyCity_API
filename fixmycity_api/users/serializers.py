@@ -1,3 +1,4 @@
+
 from rest_framework import serializers
 from accounts.models import CustomUser , Role
 from django.contrib.auth import authenticate
@@ -7,13 +8,13 @@ from django.contrib.auth import authenticate
 class RegistorUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('first_name', 'last_name','phone_number')
+        fields = ('first_name', 'last_name','phone_number' , 'ProfileImage')
         read_only_fields = ['id']
         
 
     def create(self, validated_data):
         role = Role.objects.get(id=3)
-        user = CustomUser(first_name= validated_data['first_name'], last_name= validated_data['last_name'], phone_number= validated_data['phone_number'] , roles = role )
+        user = CustomUser(first_name= validated_data['first_name'], last_name= validated_data['last_name'], phone_number= validated_data['phone_number'] ,ProfileImage = validated_data['ProfileImage'], roles = role )
         user.save()
         return user
     
@@ -54,9 +55,15 @@ class LoginUserSerializer(serializers.Serializer):
         return attrs
     
     
-class LoginSerializer(serializers.Serializer):
-    # password = serializers.CharField(required=True, write_only=True)
+class LoginSerializer(serializers.ModelSerializer):
+    ProfileImage = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
     phone_number = serializers.CharField(required=True)
+    class Meta:
+        model = CustomUser
+        fields = ("phone_number" , 'first_name' , 'last_name' , 'ProfileImage')
+    # first_name = serializers.CharField(required=True)
+    # last_name = serializers.CharField(required=True)
+    # ProfileImage = serializers.CharField(required = False)
 
          
         

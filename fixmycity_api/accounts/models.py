@@ -1,20 +1,21 @@
 
 from pickle import TRUE
 from django.conf import settings
-from django.db import models
+from django.contrib.gis.db import models
 from django.core.validators import RegexValidator
 
 # Create your models here.
-from django.db import models
+# from django.db import models
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 import random
 # from graphql_relay import to_global_id
 # from accounts.managers import UserManager
 
-from django.db import models
+# from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from datetime import datetime
+from cloudinary.models import CloudinaryField
 
 # def profile_pic_path(instance, filename):
 #     rand_int = str(random.randint(0, 999999))
@@ -158,7 +159,14 @@ class Sector(models.Model):
     phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True) # validators should be a list
     created_at = models.DateTimeField(auto_now_add=True)
     email = models.EmailField(max_length=150, unique=True)
-    location = models.CharField(max_length=255, null=True, blank=True)
+    location = models.PointField(null=True, blank=True,)
+    address = models.CharField(max_length=255 , null=True)
+    
+    
+    
+    
+    
+    
 class SectorAdmin(User):
     sector_user = models.OneToOneField(User, on_delete=models.CASCADE, parent_link=True)
     email = models.EmailField(max_length=100, null=False)
@@ -176,7 +184,7 @@ class CustomUser(User):
     phone_number     = models.CharField(validators=[phone_regex], max_length=13, unique=True)
     first_name       = models.CharField(max_length = 255, null = True)
     last_name        = models.CharField(max_length = 255, null = True)
-    ProfileUrl       = models.CharField(max_length = 255  , null=True , blank=True)
+    ProfileImage     = CloudinaryField('image' , null=True)
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = []
     objects = CustomUserManager()

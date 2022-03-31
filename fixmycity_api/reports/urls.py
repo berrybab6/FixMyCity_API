@@ -15,7 +15,7 @@
 # ]
 
 
-from unicodedata import name
+
 from rest_framework import routers
 from .views import ReportAPIView ,LikeReportView , ChartDataView
 from django.urls import path, include
@@ -26,9 +26,10 @@ app_name = 'report'
 router = routers.DefaultRouter()
 
 router.register('report', viewset=ReportAPIView, basename='report')
+# router.register('chart', viewset=ChartDataView, basename='chart')
 
 urlpatterns = [
     path('', include(router.urls )),
     path('like/<int:pk>' ,LikeReportView.as_view()),
-    path('chart' ,  ChartDataView.as_view())
+    path('chart' ,ChartDataView.as_view())
 ]

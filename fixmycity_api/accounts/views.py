@@ -1,16 +1,19 @@
 
+from audioop import add
 from django.shortcuts import render
 from rest_framework import generics, status, permissions, serializers, viewsets
 
 # from rest_framework import serializers
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from django.contrib.gis.geos import GEOSGeometry
 from rest_framework.response import Response
 from django.http import JsonResponse
 from .serializers import LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer
 from .utils import Utils
 from .models import Role, Sector, User,SectorAdmin
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
+import geocoder
 
 # Create your views here.
 
@@ -95,6 +98,39 @@ class SectorView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return super().get_queryset()
+    
+
+
+# class SectorAPIView(viewsets.ModelViewSet):
+#     # permission_classes = (IsAuthenticated,IsSectorAdmin )
+#     serializer_class = SectorSerializer
+   
+#     queryset = Sector.objects.all().order_by("-created_at")
+#     def get_queryset(self):
+#         report = Sector.objects.all().order_by("-created_at")
+#         return report
+    
+#     def create(self, request, **kwargs):
+#         address = request.data['address']
+#         print("address is" , address)
+#         g = geocoder.google(address)
+#         print("after geo coder is ", g)
+#         latitude = g.latlng[0]
+#         longtiude = g.latlng[1]
+#         pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude))
+#         serializer_obj = SectorSerializer(data=request.data)
+        
+#         if serializer_obj.is_valid():
+#             serializer_obj.save(location=pnt)
+#             return Response({"msg": 'Data Created'}, status=status.HTTP_201_CREATED)
+#         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+   
+    
+    
+    
+    
 
 class TestView(APIView):
     def get(self, request):

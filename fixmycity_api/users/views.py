@@ -11,6 +11,8 @@ from accounts.utils import Utils
 from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny
 from twilio.rest import Client
+from rest_framework.permissions import IsAuthenticated
+from permissions import IsCustomUser
 
 
 def send_otp(phone):
@@ -78,17 +80,17 @@ class ValidatePhoneSendOTP(APIView):
                     if count > 7:
                         return Response({
                             'status' : False, 
-                             'detail' : 'Maximum otp limits reached. Kindly support our customer care or try with different number'
+                             'message' : 'Maximum otp limits reached. Kindly support our customer care or try with different number'
                         })
                     
                     
                 else:
                     return Response({
-                                'status': 'False', 'detail' : "OTP sending error. Please try after some time."
+                                'status': 'False', 'message' : "OTP sending error. Please try after some time."
                             })
                 
                 return Response({
-                    'status': True, 'detail': 'Otp has been sent successfully please verify login otp.'
+                    'status': True, 'message': 'Otp has been sent successfully please proceed to login.'
                 })
             
                 
@@ -119,21 +121,21 @@ class ValidatePhoneSendOTP(APIView):
                     if count > 7:
                         return Response({
                             'status' : False, 
-                             'detail' : 'Maximum otp limits reached. Kindly support our customer care or try with different number'
+                             'message' : 'Maximum otp limits reached. Kindly support our customer care or try with different number'
                         })
                     
                     
                 else:
                     return Response({
-                                'status': 'False', 'detail' : "OTP sending error. Please try after some time."
+                                'status': 'False', 'message' : "OTP sending error. Please try after some time."
                             })
 
                 return Response({
-                    'status': True, 'detail': 'Otp has been sent successfully.'
+                    'status': True, 'message': 'Otp has been sent successfully please verify otp.'
                 })
         else:
             return Response({
-                'status': 'False', 'detail' : "u haven't set any phone number. Please do a POST request."
+                'status': 'False', 'message' : "u haven't set any phone number. Please do a POST request."
             })
             
             
@@ -183,7 +185,7 @@ class ValidateOTP(APIView):
             })
             
             
-class ValidateLoginOTP(APIView):
+class Login(APIView):
     permission_classes = [AllowAny, ]
     '''
     If you have received otp, post a request with phone and that otp and you will be redirected to set the password
@@ -202,27 +204,46 @@ class ValidateLoginOTP(APIView):
                 if str(otp) == str(otp_sent):
                     old.logged = True
                     old.save()
+                    phone_number = request.data['phone_number']
+                    old = PhoneOTP.objects.filter(phone_number__iexact = phone_number)
+                    if old.exists():
+                        old = old.first()
+                        serializer = LoginSerializer(data=request.data)
+                        serializer.is_valid(raise_exception=True)
+                        user = Utils.authenticate_custome_user(serializer.validated_data)
+                        print(user)
+        # queryset = user
+                        serializedUser = LoginSerializer(user)
+                        token = Utils.encode_token(user)
+                        old.delete()
+                        return Response({"data":serializedUser.data, "token":token})
+                    else:
+                        return Response({
+                            'status': False,
+                            'message': 'Your otp was not verified earlier. Please go back and verify otp'
 
-                    return Response({
-                        'status' : True, 
-                        'detail' : 'OTP matched, kindly proceed to login'
-                    })
+                        })
+
+                    # return Response({
+                    #     'status' : True, 
+                    #     'detail' : 'OTP matched, kindly proceed to login'
+                    # })
                 else:
                     return Response({
                         'status' : False, 
-                        'detail' : 'OTP incorrect, please try again'
+                        'message' : 'OTP incorrect, please try again'
                     })
             else:
                 return Response({
                     'status' : False,
-                    'detail' : 'Phone not recognised. Kindly request a new otp with this number'
+                    'message' : 'Phone not recognised. Kindly request a new otp with this number'
                 })
 
 
         else:
             return Response({
                 'status' : 'False',
-                'detail' : 'Either phone or otp was not recieved in Post request'
+                'message' : 'Either phone or otp was not recieved in Post request'
             })
             
             
@@ -239,25 +260,27 @@ class Register(APIView):
         phone_number = request.data.get('phone_number', False)
         first_name = request.data.get('first_name', False)
         last_name = request.data.get('last_name', False)
+        ProfileImage = request.data.get('ProfileImage' , False)
         
 
         if phone_number and first_name and last_name:
             phone_number = str(phone_number)
             user = CustomUser.objects.filter(phone_number__iexact = phone_number)
             if user.exists():
-                return Response({'status': False, 'detail': 'Phone Number already have account associated.'})
+                return Response({'status': False, 'message': 'Phone Number already have account associated.'})
             else:
                 old = PhoneOTP.objects.filter(phone_number__iexact = phone_number)
                 if old.exists():
                     old = old.first()
                     validated = old.logged
                     if validated:
-                        Temp_data = {'phone_number': phone_number, 
-                                     'first_name': first_name,
-                                     'last_name': last_name
-                                     }
+                        # Temp_data = {'phone_number': phone_number, 
+                        #              'first_name': first_name,
+                        #              'last_name': last_name,
+                        #              'ProfileImage': ProfileImage
+                        #              }
 
-                        serializer = RegistorUserSerializer(data=Temp_data)
+                        serializer = RegistorUserSerializer(data=request.data)
                         serializer.is_valid(raise_exception=True)
                         user = serializer.save()
                         
@@ -280,13 +303,13 @@ class Register(APIView):
                     else:
                         return Response({
                             'status': False,
-                            'detail': 'Your otp was not verified earlier. Please go back and verify otp'
+                            'message': 'Your otp was not verified earlier. Please go back and verify otp'
 
                         })
                 else:
                     return Response({
                     'status' : False,
-                    'detail' : 'Phone number not recognised. Kindly request a new otp with this number'
+                    'message' : 'Phone number not recognised. Kindly request a new otp with this number'
                 })
                     
 
@@ -296,55 +319,33 @@ class Register(APIView):
         else:
             return Response({
                 'status' : 'False',
-                'detail' : 'Either phone or password was not recieved in Post request'
+                'message' : 'Either first_name or last_name was not recieved in Post request'
             })
             
             
             
 
+class EditProfile(APIView):
+    permission_classes =  [IsAuthenticated, IsCustomUser]
 
-
-
-
-class LoginView(APIView):
-    permission_classes = (permissions.AllowAny,)
-    queryset = CustomUser.objects.all()
-    serializer_class = LoginSerializer
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        user = Utils.authenticate_custome_user(serializer.validated_data)
-        print(user)
-        # queryset = user
-        serializedUser = LoginSerializer(user)
-        token = Utils.encode_token(user)
+    def patch(self, request, format=None):
+        try:
+            # exist then update
+            profile = CustomUser.objects.get(id=request.user.id)
+            serializer = LoginSerializer(profile, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+        except CustomUser.DoesNotExist:
+            return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+    
+    
+    
+    
+  
         
-        return Response({"data":serializedUser.data, "token":token})
-        
-    def get_queryset(self):
-        return super().get_queryset()            
 
 
-            
-            
-            
-class LoginAPI(APIView):
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request, format=None):
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        user.save()
-        # if user.last_login is None :
-        #     user.first_login = True
-        #     user.save()
-            
-        # elif user.first_login:
-        #     user.first_login = False
-        #     user.save()
-            
-        login(request, user)
-        return super().post(request, format=None)
 

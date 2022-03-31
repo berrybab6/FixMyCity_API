@@ -12,7 +12,6 @@ from django.contrib.gis.db.models.functions import Distance
 
 
 
-
 class ReportAPIView(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,IsSectorAdmin )
     serializer_class = ReportSerializer
@@ -115,9 +114,11 @@ class LikeReportView(APIView):
 class ChartDataView(APIView):
     permission_classes = (IsAuthenticated , IsSectorAdmin)
     def get(self , request , format=None):
-        recived_count = Report.objects.all().count()
-        resolved_count  = Report.objects.filter(state=True).count()
-        unresolved_count = Report.objects.filter(state=False).count()
+        startdate = self.request.query_params.get('startdate', None)
+        enddate = self.request.query_params.get('enddate', None)
+        recived_count = Report.objects.filter(postedAt__range=[startdate, enddate]).count()
+        resolved_count  = Report.objects.filter(state=True , postedAt__range=[startdate, enddate]).count()
+        unresolved_count = Report.objects.filter(state=False , postedAt__range=[startdate, enddate]).count()
         labeles = ["Recived" , "Resolved" , "UnResolved"]
         default_items = [recived_count , resolved_count , unresolved_count]
         data = {
@@ -125,8 +126,9 @@ class ChartDataView(APIView):
             "default": default_items
         }
         return Response(data)
+    
+    
 
-        
         
         
     
