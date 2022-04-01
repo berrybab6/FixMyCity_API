@@ -6,6 +6,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from rest_framework.response import Response
 from django.http import JsonResponse
 from .serializers import LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer
+from .serializers import LoginSerializer, RoleSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer
 from .utils import Utils
 from .models import Role, Sector, User,SectorAdmin
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
@@ -23,11 +24,13 @@ class RegisterView(APIView):
         password_ = data['password']
         email_ = data['email']
         full_name_ = data['full_name']
+        sector_= data['sector']
+        sec= Sector.objects.get(id=sector_)
         role = Role.objects.get(id=2)
-        user = SectorAdmin(username=username_,password=password_,email=email_, full_name=full_name_, roles=role,main_sector=True )
+        user = SectorAdmin(username=username_,password=password_,email=email_, full_name=full_name_, roles=role,main_sector=True,sector=sec)
         user.save()
         serializer = SectorAdminSerializer(user)
-        
+
         return Response({"data":serializer.data})
 
 class EditProfile(APIView):
@@ -89,6 +92,7 @@ class SectorAPIView(viewsets.ModelViewSet):
     permission_classes = ( IsAuthenticated,IsSuperAdmin,)
     # http_method_names = ['get', 'post', 'patch']
     serializer_class = SectorSerializer
+
     pagination_class = PageNumberPagination
     queryset = Sector.objects.all().order_by("-created_at")
     def get_queryset(self):
@@ -123,9 +127,14 @@ class SectorAPIView(viewsets.ModelViewSet):
     #         qs = qs.annotate(distance= Distance('location' , pnt)).filter(distance__lte=3000).order_by("-postedAt")
     #         serializer = ReportSerializer(qs , many= True)
     #     return Response(serializer.data)
-        
 
-    
+#     queryset = Sector.objects.all()
+#     permission_classes = [AllowAny, ]
+
+
+#     def get_queryset(self):
+#         return super().get_queryset()
+
     
     
     
@@ -214,7 +223,34 @@ class SectorAPIView(viewsets.ModelViewSet):
    
     
     
+class RoleView(generics.GenericAPIView):
     
+    serializer_class = RoleSerializer
+    queryset = Role.objects.all()
+    permission_classes = [AllowAny, ]
+
+    def post(self,request):
+
+        ad = Role.objects.get_or_create(id=1)
+        ser1 = RoleSerializer(ad)
+
+        sec = Role.objects.get_or_create(id=2)
+        ser2 = RoleSerializer(sec)
+    
+        custom = Role.objects.get_or_create(id=3)
+        ser3 = RoleSerializer(custom)
+        
+        counts = Role.objects.count()
+        if counts>=3:
+            roles = Role.objects.all()
+            ser = RoleSerializer(roles,many=True)
+            return JsonResponse({"Roles":ser.data,"message":"All Roles are already created"})
+        else: 
+            return JsonResponse({"role1":ser1.data,"role2":ser2.data,"role3":ser3.data,"count":counts}) 
+
+        
+
+        
     
 
 class TestView(APIView):
