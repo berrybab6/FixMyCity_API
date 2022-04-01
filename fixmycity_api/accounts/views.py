@@ -89,7 +89,8 @@ class LoginSectorAdminView(APIView):
     
     
 class SectorAPIView(viewsets.ModelViewSet):
-    permission_classes = ( IsAuthenticated,IsSuperAdmin,)
+    permission_classes = (permissions.AllowAny,)
+    # permission_classes = ( IsAuthenticated,IsSuperAdmin,)
     # http_method_names = ['get', 'post', 'patch']
     serializer_class = SectorSerializer
 

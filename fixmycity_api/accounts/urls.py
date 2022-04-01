@@ -8,8 +8,8 @@ from django.conf.urls.static import static
 
 from django.urls import include
 
-from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestView,SectorView , LoginSectorAdminView
-from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestView,SectorView, RoleView
+from .views import EditProfile, LoginView, RegisterView, LoginSerializer,SectorAPIView, TestView,  LoginSectorAdminView
+from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestView, RoleView
 
 
 from rest_framework import routers
@@ -18,7 +18,7 @@ router = routers.DefaultRouter()
 
 router.register('sector',SectorAPIView,basename='sector')
 
-router.register('',SectorView,basename='Sector')
+# router.register('',SectorView,basename='Sector')
 # router.register('role',SectorView,basename='Role')
 
 # router.register('login',LoginView,basename='User')

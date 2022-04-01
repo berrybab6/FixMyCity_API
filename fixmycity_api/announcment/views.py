@@ -4,7 +4,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from .models import Announcement
 from .serializers import AnnouncementSerializer
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated , BasePermission , SAFE_METHODS
 from rest_framework import serializers, viewsets
@@ -18,6 +18,7 @@ from permissions import IsSectorAdmin
 
 class AnnouncementAPIView(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,IsSectorAdmin )
+    permission_classes = (permissions.AllowAny,)
     serializer_class = AnnouncementSerializer
     pagination_class = PageNumberPagination
     def get_queryset(self):
@@ -97,13 +98,13 @@ class AnnouncementAPIView(viewsets.ModelViewSet):
         
         
         
-    def get_permissions(self):
-        """Set custom permissions for each action."""
-        if self.action in ['update', 'partial_update', 'destroy', 'create']:
-            self.permission_classes = [IsAuthenticated, IsSectorAdmin]
-        elif self.action in ['list' , 'retrieve']:
-            self.permission_classes = [IsAuthenticated  ]
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     """Set custom permissions for each action."""
+    #     if self.action in ['update', 'partial_update', 'destroy', 'create']:
+    #         self.permission_classes = [IsAuthenticated, IsSectorAdmin]
+    #     elif self.action in ['list' , 'retrieve']:
+    #         self.permission_classes = [IsAuthenticated  ]
+    #     return super().get_permissions()
 
     
     

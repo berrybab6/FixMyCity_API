@@ -4,7 +4,7 @@ from .serializers import ReportSerializer ,ReportUpdateSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import serializers, viewsets
+from rest_framework import serializers, viewsets, permissions
 from rest_framework.pagination import PageNumberPagination
 from permissions import IsSectorAdmin , IsCustomUser, IsSuperAdmin
 from django.contrib.gis.geos import GEOSGeometry
@@ -13,6 +13,7 @@ from django.contrib.gis.db.models.functions import Distance
 
 
 class ReportAPIView(viewsets.ModelViewSet):
+    permission_classes = (permissions.AllowAny,)
     # permission_classes = (IsAuthenticated,IsSectorAdmin )
     http_method_names = ['get', 'post', 'patch']
     serializer_class = ReportSerializer
@@ -84,22 +85,23 @@ class ReportAPIView(viewsets.ModelViewSet):
         
         
         
-    def get_permissions(self):
-        """Set custom permissions for each action."""
-        if self.action in [ 'partial_update', 'destroy', ]:
-            self.permission_classes = [IsAuthenticated, IsSectorAdmin]
-        elif self.action in ['list' ,]:
-            self.permission_classes = [IsAuthenticated  ]
-        elif self.action in ['create']:
-            self.permission_classes = [IsAuthenticated , IsCustomUser ]
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     """Set custom permissions for each action."""
+    #     if self.action in [ 'partial_update', 'destroy', ]:
+    #         self.permission_classes = [IsAuthenticated, IsSectorAdmin]
+    #     elif self.action in ['list' ,]:
+    #         self.permission_classes = [IsAuthenticated  ]
+    #     elif self.action in ['create']:
+    #         self.permission_classes = [IsAuthenticated , IsCustomUser ]
+    #     return super().get_permissions()
     
     
 
 
 
 class LikeReportView(APIView):
-    permission_classes = (IsAuthenticated, IsCustomUser)
+    # permission_classes = (IsAuthenticated, IsCustomUser)
+    permission_classes = (permissions.AllowAny,)
     def post(self, request, *args, **kwargs):
         id = self.kwargs.get("pk")
         report = Report.objects.get(id=id)
@@ -113,7 +115,8 @@ class LikeReportView(APIView):
         
         
 class ChartDataView(APIView):
-    permission_classes = (IsAuthenticated , IsSectorAdmin)
+    # permission_classes = (IsAuthenticated , IsSectorAdmin)
+    permission_classes = (permissions.AllowAny,)
     def get(self , request , format=None):
         startdate = self.request.query_params.get('startdate', None)
         enddate = self.request.query_params.get('enddate', None)

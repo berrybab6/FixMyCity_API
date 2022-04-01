@@ -125,8 +125,7 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'fix',
-
+        'NAME': 'scene',
         'USER': 'postgres',
         'PASSWORD': 'new_password',
         'HOST': '127.0.0.1',
@@ -143,10 +142,16 @@ DATABASES = {
 CORS_ALLOWED_ORIGINS = [
     "https://fixmycity-24.herokuapp.com",
     "https://fixmycity5-24.herokuapp.com",
+    "http://localhost:3000",
+    "http://192.168.8.106:3000",
+    'https://7677-197-156-86-169.ngrok.io'
 ]
 CSRF_TRUSTED_ORIGINS = [
     'https://fixmycity-24.herokuapp.com',
     "https://fixmycity5-24.herokuapp.com",
+     "http://localhost:3000",
+    "http://192.168.8.106:3000",
+    'https://7677-197-156-86-169.ngrok.io'
 ]
 
 CORS_ALLOW_METHODS = [
@@ -199,11 +204,11 @@ USE_TZ = True
 # Cloudinary stuff
 from decouple import config
 
-# CLOUDINARY_STORAGE = {
-#     'CLOUD_NAME': "fixmy",
-#     'API_KEY': "643632981747267",
-#     'API_SECRET': "Td25NOCD3ztR2wjDx475BeQdh_w",
-# }
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': "fixmy",
+    'API_KEY': "643632981747267",
+    'API_SECRET': "Td25NOCD3ztR2wjDx475BeQdh_w",
+}
 
 cloudinary.config(
     cloud_name="shetechs",
