@@ -1,3 +1,4 @@
+
 from email import message
 from django.shortcuts import render
 from rest_framework.views import APIView
@@ -7,7 +8,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated , BasePermission , SAFE_METHODS
 from rest_framework import serializers, viewsets
-from .permissions import IsSectorAdmin
+from rest_framework.pagination import PageNumberPagination
+from permissions import IsSectorAdmin
 
 
 
@@ -15,8 +17,9 @@ from .permissions import IsSectorAdmin
 
 
 class AnnouncementAPIView(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated, )
+    # permission_classes = (IsAuthenticated,IsSectorAdmin )
     serializer_class = AnnouncementSerializer
+    pagination_class = PageNumberPagination
     def get_queryset(self):
         announcment = Announcement.objects.all().order_by("-date")
         print(announcment)
@@ -91,6 +94,16 @@ class AnnouncementAPIView(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Announcement.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        
+        
+    def get_permissions(self):
+        """Set custom permissions for each action."""
+        if self.action in ['update', 'partial_update', 'destroy', 'create']:
+            self.permission_classes = [IsAuthenticated, IsSectorAdmin]
+        elif self.action in ['list' , 'retrieve']:
+            self.permission_classes = [IsAuthenticated  ]
+        return super().get_permissions()
 
     
     
@@ -108,3 +121,4 @@ class AnnouncementAPIView(viewsets.ModelViewSet):
     
     
    
+

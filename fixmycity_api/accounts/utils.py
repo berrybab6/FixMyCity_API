@@ -1,7 +1,7 @@
 import email
 from django.contrib.auth import authenticate
-from .models import SectorAdmin, User
-from users.models import User as users
+from .models import SectorAdmin, User , CustomUser
+# from users.models import User as users
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers
 import django.contrib.auth.password_validation as validators
@@ -61,7 +61,7 @@ class Utils:
         print(phone_number)
         # password = validated_data['password']
         
-        user = users.objects.filter(phone_number=phone_number).first()
+        user = CustomUser.objects.filter(phone_number=phone_number).first()
         
         if user :
             print(user)

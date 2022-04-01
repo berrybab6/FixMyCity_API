@@ -26,10 +26,13 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('v1/admins/',include('accounts.urls')),
-    path('v1/report/' , include('reports.urls')),
-    path('', include('announcment.urls')),
+    path('v1/' , include('reports.urls')),
+    path('v1/', include('announcment.urls')),
     # path('v1/announcement/' , include('announcment.urls')),
     
     path('v1/normaluser/',include('users.urls')),
     
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

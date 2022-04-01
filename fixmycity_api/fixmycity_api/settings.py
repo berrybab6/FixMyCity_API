@@ -22,7 +22,8 @@ import dj_database_url
 
 import os
 import cloudinary
-import cloudinary_storage
+import cloudinary.uploader
+import cloudinary.api
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'corsheaders',
     'cloudinary',
     'cloudinary_storage',
@@ -83,7 +85,15 @@ REST_FRAMEWORK  = {
         
         
         #  'rest_framework.permissions.IsAuthenticated', # make all endpoints private
-    )
+    ),
+     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+     'PAGE_SIZE': 10
+        
+        
+        
+       
+    
+    
     }
 
 ROOT_URLCONF = 'fixmycity_api.urls'
@@ -113,8 +123,10 @@ AUTH_USER_MODEL = 'accounts.User'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fixmycity',
+        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'fix',
+
         'USER': 'postgres',
         'PASSWORD': 'new_password',
         'HOST': '127.0.0.1',
@@ -193,11 +205,18 @@ from decouple import config
 #     'API_SECRET': "Td25NOCD3ztR2wjDx475BeQdh_w",
 # }
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': config('CLOUD_NAME', default=""),
-    'API_KEY': config('API_KEY', default=""),
-    'API_SECRET': config('API_SECRET', default=""),
-}
+cloudinary.config(
+    cloud_name="shetechs",
+    api_key="171174673812633",
+    api_secret="1Adci2An4RTqgFakBpoF5vMz63I"
+)
+
+
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': config('CLOUD_NAME', default=""),
+#     'API_KEY': config('API_KEY', default=""),
+#     'API_SECRET': config('API_SECRET', default=""),
+# }
 # CLOUDINARY_STORAGE = {
 #     'CLOUD_NAME': os.environ.get("CLOUD_NAME",default="foo1"),
 #     'API_KEY': os.environ.get('API_KEY', default="foo2"),
