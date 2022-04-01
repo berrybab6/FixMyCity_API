@@ -6,11 +6,12 @@ from users.serializers import RegistorUserSerializer
 
 
 class ReportSerializer(serializers.ModelSerializer):
+    
     distance = serializers.DecimalField(source="distance.m" , max_digits=100 , decimal_places=2 , required= False , read_only = True)
     like_count = serializers.SerializerMethodField()
     class Meta:
         model = Report
-        fields = ("id" ,"image", "tag", "description",  "postedAt" ,"distance" , "like_count" , "sector", "user", "location")
+        fields = ("id" ,"image", "tag", "description",  "postedAt" ,"distance" , "like_count" , "sector", "user", "location" ,'state' , 'spamStatus' )
         read_only_fields = ("id" , "distance")
         # fields = "__all__"
         
@@ -37,7 +38,16 @@ class ReportSerializer(serializers.ModelSerializer):
         except CustomUser.DoesNotExist:
             user = None
         
-        return data    
+        return data  
+    
+
+class ReportUpdateSerializer(serializers.ModelSerializer):
+   class Meta:
+        model = Report
+        fields = ('id' , 'sector' ,'state' , 'spamStatus' )
+        read_only_fields = ("id" ,"image", "tag", "description",  "postedAt" ,"distance" , "like_count" , "sector", "user", "location"  )
+        # fields = "__all__"
+          
 
 
 # class LocationSerializer(serializers.ModelSerializer):

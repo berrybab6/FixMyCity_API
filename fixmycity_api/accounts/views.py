@@ -1,8 +1,4 @@
-
-from audioop import add
-from django.shortcuts import render
 from rest_framework import generics, status, permissions, serializers, viewsets
-
 # from rest_framework import serializers
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
@@ -13,9 +9,9 @@ from .serializers import LoginSerializer, SectorAdminSerializer, SectorSerialize
 from .utils import Utils
 from .models import Role, Sector, User,SectorAdmin
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
-import geocoder
+from rest_framework.pagination import PageNumberPagination
+from permissions import IsSectorAdmin, IsSuperAdmin
 
-# Create your views here.
 
 
 class RegisterView(APIView):
@@ -89,15 +85,104 @@ class LoginSectorAdminView(APIView):
     
     
     
-class SectorView(viewsets.ModelViewSet):
-    
+class SectorAPIView(viewsets.ModelViewSet):
+    permission_classes = ( IsAuthenticated,IsSuperAdmin,)
+    # http_method_names = ['get', 'post', 'patch']
     serializer_class = SectorSerializer
-    queryset = Sector.objects.all()
-    permission_classes = [IsAdminUser, ]
-
-
+    pagination_class = PageNumberPagination
+    queryset = Sector.objects.all().order_by("-created_at")
     def get_queryset(self):
-        return super().get_queryset()
+        sector = Sector.objects.all().order_by("-created_at")
+        return sector
+    
+    def create(self, request, **kwargs):
+        latitude = request.data['lat']
+        longtiude = request.data['lng']
+        pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude))
+        serializer_obj = SectorSerializer(data=request.data)
+        
+        if serializer_obj.is_valid():
+            serializer_obj.save(location=pnt)
+            return Response({"message": 'Data Created'}, status=status.HTTP_201_CREATED)
+        return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    
+    
+
+    
+    # def list(self, request, *args, **kwargs):
+    #     report = Sector.objects.all().order_by("-created_at")
+    #     serializer = SectorSerializer(report , many= True)
+    #     qs = super().get_queryset()
+      
+    #     latitude = self.request.query_params.get('lat', None)
+    #     longtiude = self.request.query_params.get('lng', None)
+    #     if latitude and longtiude:
+    #         pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude) , srid=4326)
+    #         qs = qs.annotate(distance= Distance('location' , pnt)).filter(distance__lte=3000).order_by("-postedAt")
+    #         serializer = ReportSerializer(qs , many= True)
+    #     return Response(serializer.data)
+        
+
+    
+    
+    
+    
+    
+    def partial_update(self, request, pk=None):
+        id = self.kwargs.get("pk")
+        try:
+            sector = Sector.objects.get(id=id)
+            sectorserializer = SectorSerializer(sector, data=request.data, partial=True)
+            if sectorserializer.is_valid():
+                sectorserializer.save()
+                return Response(sectorserializer.data, status=status.HTTP_200_OK)
+            return Response(sectorserializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Sector.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        
+        
+        
+    
+    def destroy(self, request, pk=None):
+        id = self.kwargs.get("pk")
+        try:
+            sector = Sector.objects.get(pk=id)
+            sector.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except sector.DoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        
+        
+    # def get_permissions(self):
+    #     """Set custom permissions for each action."""
+    #     if self.action in [ 'partial_update', 'destroy', ]:
+    #         self.permission_classes = [IsAuthenticated, IsSuperAdmin]
+    #     elif self.action in ['list' ,]:
+    #         self.permission_classes = [IsAuthenticated  ]
+    #     elif self.action in ['create']:
+    #         self.permission_classes = [IsAuthenticated , IsSuperAdmin ]
+    #     return super().get_permissions()
+    
+    
+
+
+
+    
+    
+    
+# class SectorView(viewsets.ModelViewSet):
+    
+#     serializer_class = SectorSerializer
+#     queryset = Sector.objects.all()
+#     permission_classes = [IsAdminUser, ]
+
+
+#     def get_queryset(self):
+#         return super().get_queryset()
     
 
 

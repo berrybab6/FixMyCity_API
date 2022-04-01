@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from .models import Report
-from .serializers import ReportSerializer
+from .serializers import ReportSerializer ,ReportUpdateSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -14,6 +14,7 @@ from django.contrib.gis.db.models.functions import Distance
 
 class ReportAPIView(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,IsSectorAdmin )
+    http_method_names = ['get', 'post', 'patch']
     serializer_class = ReportSerializer
     pagination_class = PageNumberPagination
     queryset = Report.objects.all().order_by("-postedAt")
@@ -60,7 +61,7 @@ class ReportAPIView(viewsets.ModelViewSet):
         id = self.kwargs.get("pk")
         try:
             report = Report.objects.get(id=id)
-            reportserializer = ReportSerializer(report, data=request.data, partial=True)
+            reportserializer = ReportUpdateSerializer(report, data=request.data, partial=True)
             if reportserializer.is_valid():
                 reportserializer.save()
                 return Response(reportserializer.data, status=status.HTTP_200_OK)
@@ -104,11 +105,11 @@ class LikeReportView(APIView):
         report = Report.objects.get(id=id)
         if report.noOfLikes.filter(id=request.user.id).exists():
             report.noOfLikes.remove(request.user)
-            return Response({"msg": 'you liked the report'}, status=status.HTTP_201_CREATED)
+            return Response({"message": 'you disliked the report'}, status=status.HTTP_201_CREATED)
             
         else:
             report.noOfLikes.add(request.user.id)
-            return Response({"msg": 'you disliked the report'}, status=status.HTTP_201_CREATED)
+            return Response({"message": 'you liked the report'}, status=status.HTTP_201_CREATED)
         
         
 class ChartDataView(APIView):
@@ -116,10 +117,11 @@ class ChartDataView(APIView):
     def get(self , request , format=None):
         startdate = self.request.query_params.get('startdate', None)
         enddate = self.request.query_params.get('enddate', None)
-        recived_count = Report.objects.filter(postedAt__range=[startdate, enddate]).count()
-        resolved_count  = Report.objects.filter(state=True , postedAt__range=[startdate, enddate]).count()
-        unresolved_count = Report.objects.filter(state=False , postedAt__range=[startdate, enddate]).count()
-        labeles = ["Recived" , "Resolved" , "UnResolved"]
+        districtname = self.request.query_params.get('dname')
+        recived_count = Report.objects.filter(sector__district_name=districtname,postedAt__range=[startdate, enddate]).count()
+        resolved_count  = Report.objects.filter(sector__district_name=districtname,state=True , postedAt__range=[startdate, enddate]).count()
+        unresolved_count = Report.objects.filter(sector__district_name=districtname, state=False , postedAt__range=[startdate, enddate]).count()
+        labeles = ["Recievd" , "Resolved" , "UnResolved"]
         default_items = [recived_count , resolved_count , unresolved_count]
         data = {
             "labels" : labeles,

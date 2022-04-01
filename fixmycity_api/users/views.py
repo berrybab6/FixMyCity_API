@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from accounts.models import CustomUser, PhoneOTP
 from rest_framework.views import APIView
-from .serializers import RegistorUserSerializer , LoginUserSerializer , LoginSerializer
+from .serializers import RegistorUserSerializer  , LoginSerializer ,UpdateUserSerializer
 from rest_framework import permissions, generics, status
 from django.contrib.auth import login
 from accounts.utils import Utils
@@ -332,7 +332,7 @@ class EditProfile(APIView):
         try:
             # exist then update
             profile = CustomUser.objects.get(id=request.user.id)
-            serializer = LoginSerializer(profile, data=request.data, partial=True)
+            serializer = UpdateUserSerializer(profile, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
@@ -342,7 +342,9 @@ class EditProfile(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
     
     
-    
+
+
+
     
   
         
