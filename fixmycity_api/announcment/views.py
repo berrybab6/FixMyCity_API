@@ -30,7 +30,7 @@ class AnnouncementAPIView(viewsets.ModelViewSet):
         
         if serializer_obj.is_valid():
             serializer_obj.save()
-            return Response({"msg": 'Data Created'}, status=status.HTTP_201_CREATED)
+            return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
     
     

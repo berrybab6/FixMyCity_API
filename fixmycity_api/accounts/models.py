@@ -1,5 +1,6 @@
 
 from pickle import TRUE
+from tokenize import blank_re
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.core.validators import RegexValidator
@@ -188,7 +189,7 @@ class CustomUser(User):
     phone_number     = models.CharField(validators=[phone_regex], max_length=13, unique=True)
     first_name       = models.CharField(max_length = 255, null = True)
     last_name        = models.CharField(max_length = 255, null = True)
-    ProfileImage     = CloudinaryField('image' , null=True)
+    ProfileImage     = CloudinaryField('image' , null=True , blank= True)
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = []
     objects = CustomUserManager()

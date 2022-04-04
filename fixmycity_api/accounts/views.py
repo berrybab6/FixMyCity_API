@@ -111,19 +111,7 @@ class SectorAPIView(viewsets.ModelViewSet):
     
 
     
-    # def list(self, request, *args, **kwargs):
-    #     report = Sector.objects.all().order_by("-created_at")
-    #     serializer = SectorSerializer(report , many= True)
-    #     qs = super().get_queryset()
-      
-    #     latitude = self.request.query_params.get('lat', None)
-    #     longtiude = self.request.query_params.get('lng', None)
-    #     if latitude and longtiude:
-    #         pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude) , srid=4326)
-    #         qs = qs.annotate(distance= Distance('location' , pnt)).filter(distance__lte=3000).order_by("-postedAt")
-    #         serializer = ReportSerializer(qs , many= True)
-    #     return Response(serializer.data)
-        
+  
 
     
     
@@ -157,15 +145,6 @@ class SectorAPIView(viewsets.ModelViewSet):
         
         
         
-    # def get_permissions(self):
-    #     """Set custom permissions for each action."""
-    #     if self.action in [ 'partial_update', 'destroy', ]:
-    #         self.permission_classes = [IsAuthenticated, IsSuperAdmin]
-    #     elif self.action in ['list' ,]:
-    #         self.permission_classes = [IsAuthenticated  ]
-    #     elif self.action in ['create']:
-    #         self.permission_classes = [IsAuthenticated , IsSuperAdmin ]
-    #     return super().get_permissions()
     
     
 
@@ -174,48 +153,7 @@ class SectorAPIView(viewsets.ModelViewSet):
     
     
     
-# class SectorView(viewsets.ModelViewSet):
-    
-#     serializer_class = SectorSerializer
-#     queryset = Sector.objects.all()
-#     permission_classes = [IsAdminUser, ]
 
-
-#     def get_queryset(self):
-#         return super().get_queryset()
-    
-
-
-# class SectorAPIView(viewsets.ModelViewSet):
-#     # permission_classes = (IsAuthenticated,IsSectorAdmin )
-#     serializer_class = SectorSerializer
-   
-#     queryset = Sector.objects.all().order_by("-created_at")
-#     def get_queryset(self):
-#         report = Sector.objects.all().order_by("-created_at")
-#         return report
-    
-#     def create(self, request, **kwargs):
-#         address = request.data['address']
-#         print("address is" , address)
-#         g = geocoder.google(address)
-#         print("after geo coder is ", g)
-#         latitude = g.latlng[0]
-#         longtiude = g.latlng[1]
-#         pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude))
-#         serializer_obj = SectorSerializer(data=request.data)
-        
-#         if serializer_obj.is_valid():
-#             serializer_obj.save(location=pnt)
-#             return Response({"msg": 'Data Created'}, status=status.HTTP_201_CREATED)
-#         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
-   
-    
-    
-    
-    
 
 class TestView(APIView):
     def get(self, request):
