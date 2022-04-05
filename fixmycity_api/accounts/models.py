@@ -96,20 +96,37 @@ class CustomUserManager(BaseUserManager):
 
 def upload_to(instance, filename):
     return '{datetime}{filename}'.format(datetime=datetime.now(), filename=filename)
+
+
+class Sector(models.Model):
+    district_name = models.CharField(unique=True,max_length=150)
+    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+    phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True) # validators should be a list
+    created_at = models.DateTimeField(auto_now_add=True)
+    email = models.EmailField(max_length=150, unique=True)
+    location = models.PointField(null=True, blank=True,)
+    address = models.CharField(max_length=255 , null=True)
+    
+    def __str__(self):
+        return self.district_name
+    
+    
 class User(AbstractBaseUser, PermissionsMixin):
     roles = models.ForeignKey(Role, on_delete=models.CASCADE,db_column='rolesId', null=True)
-
-# class Admins(models.Model):
-    # roles = models.ManyToManyField(Role)
     id = models.AutoField(primary_key=True)
-
-    # user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
-    full_name = models.CharField(max_length=255 , null=True)
     username = models.CharField(max_length=255 , null=False , unique=True)
-    image = models.ImageField(upload_to=upload_to , null= True, blank=True )
     created_at = models.DateTimeField(auto_now=True)
     staff = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
+    is_verified = models.BooleanField(default=False)
+    main_sector = models.BooleanField(default=False)
+    email = models.EmailField(max_length=150, unique=True , null=True)
+    sector = models.ForeignKey(Sector, on_delete=models.CASCADE,related_name="sector", null=True)
+    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+    phone_number     = models.CharField(validators=[phone_regex], max_length=13, unique=True , null=True)
+    first_name       = models.CharField(max_length = 255, null = True)
+    last_name        = models.CharField(max_length = 255, null = True)
+    ProfileImage     = CloudinaryField('image' , null=True , blank= True)
     # admin = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'username'
@@ -147,55 +164,78 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_active(self):
         return self.active
     def __str__(self):
-        return str(self.username) if self.username else ''
+        return str(self.id)
+    
+    def save(self, *args, **kwargs):
+        if not self.id:
+            username = self.username
+            username_exists = True
+            counter = 1
+            self.username = username
+            while username_exists:
+                try:
+                    username_exists = User.objects.get(username=username)
+                    if username_exists:
+                        username = self.username + '_' + str(counter)
+                        counter += 1
+                except User.DoesNotExist:
+                    self.username = username
+                    break
+        super(User, self).save(*args, **kwargs)
 
     class Meta:
         abstract = False
 # Create your models here.
 
 
-class Sector(models.Model):
-    district_name = models.CharField(unique=True,max_length=150)
-    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
-    phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True) # validators should be a list
-    created_at = models.DateTimeField(auto_now_add=True)
-    email = models.EmailField(max_length=150, unique=True)
-    location = models.PointField(null=True, blank=True,)
-    address = models.CharField(max_length=255 , null=True)
+# class Sector(models.Model):
+#     district_name = models.CharField(unique=True,max_length=150)
+#     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+#     phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True) # validators should be a list
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     email = models.EmailField(max_length=150, unique=True)
+#     location = models.PointField(null=True, blank=True,)
+#     address = models.CharField(max_length=255 , null=True)
     
-    def __str__(self):
-        return self.district_name
-    
-    
+#     def __str__(self):
+#         return self.district_name
     
     
     
     
     
-class SectorAdmin(User):
-    sector_user = models.OneToOneField(User, on_delete=models.CASCADE, parent_link=True)
-    email = models.EmailField(max_length=100, null=False)
-    main_sector = models.BooleanField(default=False)
-    sector = models.ForeignKey(Sector, on_delete=models.CASCADE,related_name="sector", null=True)
-    @property
-    def is_main_sector(self):
-        return self.main_sector
-    objects = CustomUserManager()
+    
+    
+# class SectorAdmin(User):
+#     sector_user = models.OneToOneField(User, on_delete=models.CASCADE, parent_link=True)
+#     email = models.EmailField(max_length=100, null=False)
+#     main_sector = models.BooleanField(default=False)
+#     sector = models.ForeignKey(Sector, on_delete=models.CASCADE,related_name="sector", null=True)
+#     @property
+#     def is_main_sector(self):
+#         return self.main_sector
+#     objects = CustomUserManager()
     
     
     
-class CustomUser(User):
-    phone_regex      = RegexValidator( regex   =r'^\+?1?\d{9,14}$', message ="Phone number must be entered in the format: '+9xxxxxxxxx'. Up to 10 digits allowed.")
-    phone_number     = models.CharField(validators=[phone_regex], max_length=13, unique=True)
-    first_name       = models.CharField(max_length = 255, null = True)
-    last_name        = models.CharField(max_length = 255, null = True)
-    ProfileImage     = CloudinaryField('image' , null=True , blank= True)
-    USERNAME_FIELD = 'phone_number'
-    REQUIRED_FIELDS = []
-    objects = CustomUserManager()
+# class CustomUser(models.Model):
+#     # id =        models.AutoField(primary_key=True)
+#     roles = models.ForeignKey(Role, on_delete=models.CASCADE,db_column='rolesId', null=True)
+    
+#     phone_regex      = RegexValidator( regex   =r'^\+?1?\d{9,14}$', message ="Phone number must be entered in the format: '+9xxxxxxxxx'. Up to 10 digits allowed.")
+#     phone_number     = models.CharField(validators=[phone_regex], max_length=13, unique=True)
+#     first_name       = models.CharField(max_length = 255, null = True)
+#     last_name        = models.CharField(max_length = 255, null = True)
+#     ProfileImage     = CloudinaryField('image' , null=True , blank= True)
+#     USERNAME_FIELD = 'phone_number'
+#     REQUIRED_FIELDS = []
+#     objects = CustomUserManager()
+    
+    
+   
 
-    def __str__(self):
-        return self.phone_number
+#     def __str__(self):
+#         return self.phone_number
     
     
     

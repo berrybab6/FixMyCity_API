@@ -1,16 +1,40 @@
 import email
 from django.contrib.auth import authenticate
-from .models import SectorAdmin, User , CustomUser
+from .models import  User 
 # from users.models import User as users
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers
 import django.contrib.auth.password_validation as validators
+from django.core.mail import EmailMessage
+
+
+import threading
+
+
+class EmailThread(threading.Thread):
+
+    def __init__(self, email):
+        self.email = email
+        threading.Thread.__init__(self)
+
+    def run(self):
+        self.email.send()
 
 class Utils:
+    @staticmethod
+    def send_email(data):
+        email = EmailMessage(
+            subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+        EmailThread(email).start()
+    
+    
+    
+    
     @staticmethod
     def encode_token(user):
         payload = {
             'id': user.id,
+            'role':user.roles
         }
         token = RefreshToken.for_user(user)
         token.payload['TOKEN_TYPE_CLAIM'] = 'access'
@@ -42,7 +66,7 @@ class Utils:
         email = validated_data['email']
         password = validated_data['password']
         
-        user = SectorAdmin.objects.filter(email=email).first()
+        user = User.objects.filter(email=email).first()
         if user:
             return user
             
@@ -61,7 +85,7 @@ class Utils:
         print(phone_number)
         # password = validated_data['password']
         
-        user = CustomUser.objects.filter(phone_number=phone_number).first()
+        user = User.objects.filter(phone_number=phone_number).first()
         
         if user :
             print(user)

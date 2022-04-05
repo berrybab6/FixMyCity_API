@@ -5,30 +5,90 @@ from django.shortcuts import get_object_or_404
 from django.contrib.gis.geos import GEOSGeometry
 from rest_framework.response import Response
 from django.http import JsonResponse
-from .serializers import LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer
+from .serializers import LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer , EmailVerificationSerializer
 from .utils import Utils
-from .models import Role, Sector, User,SectorAdmin
+from .models import Role, Sector, User
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 from permissions import IsSectorAdmin, IsSuperAdmin
+from rest_framework_simplejwt.tokens import RefreshToken
+import jwt
+from django.conf import settings
+from django.http import HttpResponsePermanentRedirect
+import os
+from django.core.mail import EmailMessage , EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.utils.crypto import get_random_string
 
+
+class CustomRedirect(HttpResponsePermanentRedirect):
+    allowed_schemes = [os.environ.get('APP_SCHEME'), 'http', 'https']
 
 
 class RegisterView(APIView):
-    permission_classes = [IsAdminUser, ]
-    serializer_class = [SectorAdminSerializer]
+    permission_classes = [AllowAny]
+    serializer_class = SectorAdminSerializer
     def post(self,request):
-        data = request.data
-        username_ = data['username']
-        password_ = data['password']
-        email_ = data['email']
-        full_name_ = data['full_name']
-        role = Role.objects.get(id=2)
-        user = SectorAdmin(username=username_,password=password_,email=email_, full_name=full_name_, roles=role,main_sector=True )
-        user.save()
-        serializer = SectorAdminSerializer(user)
+        user = request.data
+        serializer = self.serializer_class(data=user)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        user_data = serializer.data
+        user = User.objects.get(email=user_data['email'])
+        email = request.data['email']
+        print(user)
+        # token = get_random_string(length=32)
+        token = RefreshToken.for_user(user).access_token
+        verify_link = 'http://localhost:3002' + '/email-verify/' + str( token)
+        subject, from_email, to = 'Verify Your Email', 'from@fpn.com', email
+        html_content = render_to_string('accounts/verify_email.html', {'verify_link':verify_link, 'base_url': 'http://localhost:3002/', 'backend_url': 'http://127.0.0.1:8000'}) 
+        text_content = strip_tags(html_content) 
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+
+        # Utils.send_email(data)
+        return Response(data=user_data,  status=status.HTTP_201_CREATED)
         
-        return Response({"data":serializer.data})
+       
+        
+        
+
+    
+class VerifyEmail(APIView):
+    permission_classes = [AllowAny, ]
+    serializer_class = EmailVerificationSerializer
+    def post(self, request):
+        token = request.data['token']
+        print(token)
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY , algorithms='HS256')
+            print(payload)
+            user = User.objects.get(id=payload['user_id'])
+            print(user)
+            if not user.is_verified:
+                user.is_verified = True
+                user.password = request.data['password']
+                user.username = request.data['username']
+                user.first_name = request.data['first_name']
+                user.last_name = request.data['first_name']
+                user.save()
+            return Response({'status': 'success'}, status=status.HTTP_200_OK)
+        except jwt.ExpiredSignatureError as identifier:
+            return Response({'status': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
+        except jwt.exceptions.DecodeError as identifier:
+            return Response({'status': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 class EditProfile(APIView):
     def put(self, request,id):

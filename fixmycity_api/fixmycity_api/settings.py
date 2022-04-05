@@ -101,7 +101,7 @@ ROOT_URLCONF = 'fixmycity_api.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': 'accounts/verify_email.html',
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -125,7 +125,7 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'fix',
+        'NAME': 'fixmycity',
         'USER': 'postgres',
         'PASSWORD': 'test123',
         'HOST': '127.0.0.1',
@@ -140,10 +140,12 @@ DATABASES = {
 # }
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3002",
     "https://fixmycity-24.herokuapp.com",
     "https://fixmycity5-24.herokuapp.com",
 ]
 CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3002",
     'https://fixmycity-24.herokuapp.com',
     "https://fixmycity5-24.herokuapp.com",
 ]
@@ -254,3 +256,9 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
     'TOKEN_TYPE_CLAIM': 'access'
 }
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'wubshetgenetu21@gmail.com'
+EMAIL_HOST_PASSWORD = 'fslgeuvbslfhakax'

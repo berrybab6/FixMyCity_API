@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Report
-from accounts.models import Sector , CustomUser
+from accounts.models import Sector , User
 from accounts.serializers import SectorSerializer
 from users.serializers import RegistorUserSerializer
 
@@ -11,7 +11,7 @@ class ReportSerializer(serializers.ModelSerializer):
     like_count = serializers.SerializerMethodField()
     class Meta:
         model = Report
-        fields = ("id" ,"image", "tag", "description",  "postedAt" ,"distance" , "like_count" , "sector", "user", "location" ,'state' , 'spamStatus' )
+        fields = ("id" ,"image", "tag", "description",  "postedAt" ,"distance" , "like_count" , "sector", "user", "location" ,'state' , 'spamStatus' , 'latitude', 'longtiude' )
         read_only_fields = ("id" , "distance")
         # fields = "__all__"
         
@@ -32,10 +32,10 @@ class ReportSerializer(serializers.ModelSerializer):
             sector = None
         
         try:
-            user = CustomUser.objects.get(pk=data['user'])
+            user = User.objects.get(pk=data['user'])
             data['user'] = RegistorUserSerializer(user).data
             
-        except CustomUser.DoesNotExist:
+        except User.DoesNotExist:
             user = None
         
         return data  
