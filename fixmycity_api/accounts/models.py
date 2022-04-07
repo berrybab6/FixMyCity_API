@@ -111,6 +111,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     active = models.BooleanField(default=True)
     # admin = models.BooleanField(default=False)
 
+
     USERNAME_FIELD = 'username'
     EMAIL_FIELD = 'username'
     # objects = UserManager()
@@ -154,6 +155,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Sector(models.Model):
+
+    TELE = 1
+    WATER_AND_SEWAGE = 2
+    ROADS_AUTHORITY = 3
+    ELPA = 4
+    SECTOR_TYPE = ((TELE,'tele'), (WATER_AND_SEWAGE, 'water_and_sewage'), (ROADS_AUTHORITY, 'roads_authority'), (ELPA, 'elpa'))       
+    sector_type = models.PositiveSmallIntegerField(
+        choices=SECTOR_TYPE, null=True)
     district_name = models.CharField(unique=True,max_length=150)
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
     phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True) # validators should be a list
@@ -176,6 +185,7 @@ class SectorAdmin(User):
     email = models.EmailField(max_length=100, null=False)
     main_sector = models.BooleanField(default=False)
     sector = models.ForeignKey(Sector, on_delete=models.CASCADE,related_name="sector", null=True)
+    
     @property
     def is_main_sector(self):
         return self.main_sector
