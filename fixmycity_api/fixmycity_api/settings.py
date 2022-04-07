@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_filters',
     # 'accounts.apps.AccountsConfig',
     'accounts',
     'users',
@@ -144,14 +145,16 @@ CORS_ALLOWED_ORIGINS = [
     "https://fixmycity5-24.herokuapp.com",
     "http://localhost:3000",
     "http://192.168.8.106:3000",
-    'https://7677-197-156-86-169.ngrok.io'
+    'https://7677-197-156-86-169.ngrok.io',
+    'https://ef71-197-156-86-181.ngrok.io'
 ]
 CSRF_TRUSTED_ORIGINS = [
     'https://fixmycity-24.herokuapp.com',
     "https://fixmycity5-24.herokuapp.com",
      "http://localhost:3000",
     "http://192.168.8.106:3000",
-    'https://7677-197-156-86-169.ngrok.io'
+    'https://7677-197-156-86-169.ngrok.io',
+    'https://ef71-197-156-86-181.ngrok.io'
 ]
 
 CORS_ALLOW_METHODS = [
