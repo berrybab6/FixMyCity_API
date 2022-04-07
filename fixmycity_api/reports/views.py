@@ -1,5 +1,7 @@
+from dis import dis
+from tracemalloc import start
 from rest_framework.views import APIView
-from .models import Report
+from .models import F, Report
 from .serializers import ReportSerializer ,ReportUpdateSerializer
 from rest_framework import status
 from rest_framework.response import Response
@@ -113,17 +115,46 @@ class LikeReportView(APIView):
             report.noOfLikes.add(request.user.id)
             return Response({"message": 'you liked the report'}, status=status.HTTP_201_CREATED)
         
-        
+import datetime
 class ChartDataView(APIView):
     # permission_classes = (IsAuthenticated , IsSectorAdmin)
     permission_classes = (permissions.AllowAny,)
+
+    def get_amount_for_source(self, reports, source):
+        reports = reports.filter(title = source)
+        amount = reports.count()
+        # for i in reports:
+        #     amount+=i.amount
+        return {'amount':str(amount)}
+    def get_source(self, report):
+        return report.title
+
+    # def get2(self , request , format=None):
+    #     todayy = datetime.date.today()
+    #     ayear_ago = todayy - datetime.timedelta(days = 30*12)
+    #     recived_count = Report.objects.filter(postedAt__gte=ayear_ago, postedAt__lte=todayy).count()
+
+    #     final = {}
+    #     # sources = list(set(map(self.get_source, recived_count)))
+
+    #     # for i in recived_count:
+    #     #     for source in sources:
+    #     #         final[source] = self.get_amount_for_source(recived_count, source)
+    #     return Response({"Statistic: ":recived_count})
     def get(self , request , format=None):
-        startdate = self.request.query_params.get('startdate', None)
+
+
+
+        startdate = self.request.query_params.get('startdate', "2022-04-01T21:12:33.047056Z")
+        # startdate = "2022-04-01T23:12:33.047056Z"
         enddate = self.request.query_params.get('enddate', None)
-        districtname = self.request.query_params.get('dname')
-        recived_count = Report.objects.filter(sector__district_name=districtname,postedAt__range=[startdate, enddate]).count()
-        resolved_count  = Report.objects.filter(sector__district_name=districtname,state=True , postedAt__range=[startdate, enddate]).count()
-        unresolved_count = Report.objects.filter(sector__district_name=districtname, state=False , postedAt__range=[startdate, enddate]).count()
+        # startdate = self.request.query_params.get('enddate', "2022-04-01T23:12:33.047056Z")
+        # enddate = datetime.today()
+        districtname = self.request.query_params.get('dname','Addis Ababa Water And Sewage Authority')
+        # districtname = 'Addis Ababa Water And Sewage Authority'
+        recived_count = Report.objects.filter(sector__district_name=districtname,postedAt__range=[enddate, startdate]).count()
+        resolved_count  = Report.objects.filter(sector__district_name=districtname,state=True , postedAt__range=[enddate, startdate]).count()
+        unresolved_count = Report.objects.filter(sector__district_name=districtname, state=False , postedAt__range=[enddate, startdate]).count()
         labeles = ["Recievd" , "Resolved" , "UnResolved"]
         default_items = [recived_count , resolved_count , unresolved_count]
         data = {

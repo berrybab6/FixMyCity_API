@@ -1,9 +1,11 @@
+from venv import create
 from django.contrib.gis.db import models
 from accounts.models import Sector, upload_to
 from accounts.models import CustomUser
 from django.contrib.postgres.fields import ArrayField
+from django_filters import FilterSet
 
-
+from django_filters import DateTimeFromToRangeFilter 
 
 # class Location(models.Model):
 #     id              = models.AutoField(primary_key=True)
@@ -43,7 +45,12 @@ class Report(models.Model):
         return self.noOfLikes.count()
     
     
-    
+class F(FilterSet):
+    postedAt = DateTimeFromToRangeFilter()
+
+    class Meta:
+        model = Report
+        fields = ['postedAt']
 
 
    

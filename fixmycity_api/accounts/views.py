@@ -14,6 +14,92 @@ from rest_framework.pagination import PageNumberPagination
 from permissions import IsSectorAdmin, IsSuperAdmin
 
 
+########################  DASHBOARD #####################
+
+from .models import CustomUser as u
+# from users.serializers import RegistorUserSerializer as customU
+class UserCount(APIView):
+    permission_classes = [AllowAny,]
+    queryset = [u.objects.all(), SectorAdmin.objects.all()]
+    # serializer_classes = [SectorAdminSerializer, customU]
+    def get(self, request):
+        
+        sectors = SectorAdmin.objects.count()
+        users = u.objects.count()
+        banned = u.objects.filter(active=False).count()
+              
+        return Response({"sectors":[sectors, "Sectors"], "users":[users, "Custom Users"], "banned":[banned,"Banned Users"]})
+        
+    def get_queryset(self):
+        return super().get_queryset()
+    
+class SectorCount(APIView):
+    permission_classes = [AllowAny,]
+    queryset = [Sector.objects.all()]
+    def get(self, request):
+        
+        water = Sector.objects.filter(sector_type=2).count()
+        tele = Sector.objects.filter(sector_type=1).count()
+        elpa = Sector.objects.filter(sector_type=4).count()
+        roads = Sector.objects.filter(sector_type=3).count()
+
+
+              
+        return Response({"tele":[tele, "Tele"], "water":[water, "Water And Sewage"], "roads":[roads,"Roads"], "elpa":[elpa, "ELPA"]})
+      
+    def get_queryset(self):
+        return super().get_queryset()
+
+
+class ActiveSectorCount(APIView):
+    permission_classes = [AllowAny,]
+    queryset = [SectorAdmin.objects.all()]
+    serializer_class = [SectorAdminSerializer]
+    def get(self, request):
+        
+        # water = SectorAdmin.objects.filter(sector=1).count()
+        waters = Sector.objects.filter(sector_type = 2)
+        teles = Sector.objects.filter(sector_type = 1)
+        roads = Sector.objects.filter(sector_type = 3)
+        elpas = Sector.objects.filter(sector_type = 4)
+        # water3 = SectorAdmin.objects.all()
+        water_count = 0
+        elpa_count = 0
+        road_count = 0
+        tele_count = 0
+
+        ########## Count Active Water Sector Admins
+        for water in waters:
+            
+            sectors = SectorAdmin.objects.filter(active = True, sector=water)
+            if sectors :
+                water_count = water_count+1
+
+        ########## Count Active Telecommunication Sector Admins
+        for tele in teles:
+            
+            sectors = SectorAdmin.objects.filter(active = True, sector=tele)
+            if sectors :
+                tele_count = tele_count+1
+
+        ########## Count Active Roads Authority Sector Admins
+        for road in roads:
+            
+            sectors = SectorAdmin.objects.filter(active = True, sector=road)
+            if sectors :
+                road_count = road_count+1
+                ########## Count Active Roads Authority Sector Admins
+        for elpa in elpas:
+            
+            sectors = SectorAdmin.objects.filter(active = True, sector=elpa)
+            if sectors :
+                elpa_count = elpa_count+1
+        return Response({"waterSectors":water_count, "teleCount":tele_count, "roadCount":road_count, "elpaCount":elpa_count})
+      
+    def get_queryset(self):
+        return super().get_queryset()
+########################  DASHBOARD #####################
+
 
 class RegisterView(APIView):
     permission_classes = [IsAdminUser, ]
