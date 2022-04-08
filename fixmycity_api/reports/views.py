@@ -26,14 +26,14 @@ class ReportAPIView(viewsets.ModelViewSet):
         return report
     
     def create(self, request, **kwargs):
-        latitude = request.data['lat']
-        longtiude = request.data['lng']
+        latitude = request.data['latitude']
+        longtiude = request.data['longtiude']
         pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude))
         serializer_obj = ReportSerializer(data=request.data)
         
         if serializer_obj.is_valid():
             serializer_obj.save(location=pnt)
-            return Response({"msg": 'Data Created'}, status=status.HTTP_201_CREATED)
+            return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
     
     

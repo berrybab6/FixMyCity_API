@@ -102,7 +102,7 @@ ROOT_URLCONF = 'fixmycity_api.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': 'accounts/verify_email.html',
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -141,6 +141,7 @@ DATABASES = {
 # }
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3002",
     "https://fixmycity-24.herokuapp.com",
     "https://fixmycity5-24.herokuapp.com",
     "http://localhost:3000",
@@ -149,6 +150,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://ef71-197-156-86-181.ngrok.io'
 ]
 CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3002",
     'https://fixmycity-24.herokuapp.com',
     "https://fixmycity5-24.herokuapp.com",
      "http://localhost:3000",
@@ -263,3 +265,9 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
     'TOKEN_TYPE_CLAIM': 'access'
 }
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'wubshetgenetu21@gmail.com'
+EMAIL_HOST_PASSWORD = 'fslgeuvbslfhakax'

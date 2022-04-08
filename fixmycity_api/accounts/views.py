@@ -5,119 +5,90 @@ from django.shortcuts import get_object_or_404
 from django.contrib.gis.geos import GEOSGeometry
 from rest_framework.response import Response
 from django.http import JsonResponse
-from .serializers import LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer
-from .serializers import LoginSerializer, RoleSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer
+from .serializers import LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer , EmailVerificationSerializer
 from .utils import Utils
-from .models import Role, Sector, User,SectorAdmin
+from .models import Role, Sector, User
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 from permissions import IsSectorAdmin, IsSuperAdmin
+from rest_framework_simplejwt.tokens import RefreshToken
+import jwt
+from django.conf import settings
+from django.http import HttpResponsePermanentRedirect
+import os
+from django.core.mail import EmailMessage , EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.utils.crypto import get_random_string
 
 
-########################  DASHBOARD #####################
-
-from .models import CustomUser as u
-# from users.serializers import RegistorUserSerializer as customU
-class UserCount(APIView):
-    permission_classes = [AllowAny,]
-    queryset = [u.objects.all(), SectorAdmin.objects.all()]
-    # serializer_classes = [SectorAdminSerializer, customU]
-    def get(self, request):
-        
-        sectors = SectorAdmin.objects.count()
-        users = u.objects.count()
-        banned = u.objects.filter(active=False).count()
-              
-        return Response({"sectors":[sectors, "Sectors"], "users":[users, "Custom Users"], "banned":[banned,"Banned Users"]})
-        
-    def get_queryset(self):
-        return super().get_queryset()
-    
-class SectorCount(APIView):
-    permission_classes = [AllowAny,]
-    queryset = [Sector.objects.all()]
-    def get(self, request):
-        
-        water = Sector.objects.filter(sector_type=2).count()
-        tele = Sector.objects.filter(sector_type=1).count()
-        elpa = Sector.objects.filter(sector_type=4).count()
-        roads = Sector.objects.filter(sector_type=3).count()
-
-
-              
-        return Response({"tele":[tele, "Tele"], "water":[water, "Water And Sewage"], "roads":[roads,"Roads"], "elpa":[elpa, "ELPA"]})
-      
-    def get_queryset(self):
-        return super().get_queryset()
-
-
-class ActiveSectorCount(APIView):
-    permission_classes = [AllowAny,]
-    queryset = [SectorAdmin.objects.all()]
-    serializer_class = [SectorAdminSerializer]
-    def get(self, request):
-        
-        # water = SectorAdmin.objects.filter(sector=1).count()
-        waters = Sector.objects.filter(sector_type = 2)
-        teles = Sector.objects.filter(sector_type = 1)
-        roads = Sector.objects.filter(sector_type = 3)
-        elpas = Sector.objects.filter(sector_type = 4)
-        # water3 = SectorAdmin.objects.all()
-        water_count = 0
-        elpa_count = 0
-        road_count = 0
-        tele_count = 0
-
-        ########## Count Active Water Sector Admins
-        for water in waters:
-            
-            sectors = SectorAdmin.objects.filter(active = True, sector=water)
-            if sectors :
-                water_count = water_count+1
-
-        ########## Count Active Telecommunication Sector Admins
-        for tele in teles:
-            
-            sectors = SectorAdmin.objects.filter(active = True, sector=tele)
-            if sectors :
-                tele_count = tele_count+1
-
-        ########## Count Active Roads Authority Sector Admins
-        for road in roads:
-            
-            sectors = SectorAdmin.objects.filter(active = True, sector=road)
-            if sectors :
-                road_count = road_count+1
-                ########## Count Active Roads Authority Sector Admins
-        for elpa in elpas:
-            
-            sectors = SectorAdmin.objects.filter(active = True, sector=elpa)
-            if sectors :
-                elpa_count = elpa_count+1
-        return Response({"waterSectors":water_count, "teleCount":tele_count, "roadCount":road_count, "elpaCount":elpa_count})
-      
-    def get_queryset(self):
-        return super().get_queryset()
-########################  DASHBOARD #####################
+class CustomRedirect(HttpResponsePermanentRedirect):
+    allowed_schemes = [os.environ.get('APP_SCHEME'), 'http', 'https']
 
 
 class RegisterView(APIView):
-    permission_classes = [IsAdminUser, ]
-    serializer_class = [SectorAdminSerializer]
+    permission_classes = [AllowAny]
+    serializer_class = SectorAdminSerializer
     def post(self,request):
-        data = request.data
-        username_ = data['username']
-        password_ = data['password']
-        email_ = data['email']
-        full_name_ = data['full_name']
-        sector_= data['sector']
-        sec= Sector.objects.get(id=sector_)
-        role = Role.objects.get(id=2)
-        user = SectorAdmin(username=username_,password=password_,email=email_, full_name=full_name_, roles=role,main_sector=True,sector=sec)
-        user.save()
-        serializer = SectorAdminSerializer(user)
+        user = request.data
+        serializer = self.serializer_class(data=user)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        user_data = serializer.data
+        user = User.objects.get(email=user_data['email'])
+        email = request.data['email']
+        print(user)
+        # token = get_random_string(length=32)
+        token = RefreshToken.for_user(user).access_token
+        verify_link = 'http://localhost:3002' + '/email-verify/' + str( token)
+        subject, from_email, to = 'Verify Your Email', 'from@fpn.com', email
+        html_content = render_to_string('accounts/verify_email.html', {'verify_link':verify_link, 'base_url': 'http://localhost:3002/', 'backend_url': 'http://127.0.0.1:8000'}) 
+        text_content = strip_tags(html_content) 
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
 
-        return Response({"data":serializer.data})
+        # Utils.send_email(data)
+        return Response(data=user_data,  status=status.HTTP_201_CREATED)
+        
+       
+        
+        
+
+    
+class VerifyEmail(APIView):
+    permission_classes = [AllowAny, ]
+    serializer_class = EmailVerificationSerializer
+    def post(self, request):
+        token = request.data['token']
+        print(token)
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY , algorithms='HS256')
+            print(payload)
+            user = User.objects.get(id=payload['user_id'])
+            print(user)
+            if not user.is_verified:
+                user.is_verified = True
+                user.password = request.data['password']
+                user.username = request.data['username']
+                user.first_name = request.data['first_name']
+                user.last_name = request.data['first_name']
+                user.save()
+            return Response({'status': 'success'}, status=status.HTTP_200_OK)
+        except jwt.ExpiredSignatureError as identifier:
+            return Response({'status': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
+        except jwt.exceptions.DecodeError as identifier:
+            return Response({'status': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 class EditProfile(APIView):
     def put(self, request,id):
@@ -202,18 +173,7 @@ class SectorAPIView(viewsets.ModelViewSet):
     
 
     
-    # def list(self, request, *args, **kwargs):
-    #     report = Sector.objects.all().order_by("-created_at")
-    #     serializer = SectorSerializer(report , many= True)
-    #     qs = super().get_queryset()
-      
-    #     latitude = self.request.query_params.get('lat', None)
-    #     longtiude = self.request.query_params.get('lng', None)
-    #     if latitude and longtiude:
-    #         pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude) , srid=4326)
-    #         qs = qs.annotate(distance= Distance('location' , pnt)).filter(distance__lte=3000).order_by("-postedAt")
-    #         serializer = ReportSerializer(qs , many= True)
-    #     return Response(serializer.data)
+  
 
 #     queryset = Sector.objects.all()
 #     permission_classes = [AllowAny, ]
@@ -253,15 +213,6 @@ class SectorAPIView(viewsets.ModelViewSet):
         
         
         
-    # def get_permissions(self):
-    #     """Set custom permissions for each action."""
-    #     if self.action in [ 'partial_update', 'destroy', ]:
-    #         self.permission_classes = [IsAuthenticated, IsSuperAdmin]
-    #     elif self.action in ['list' ,]:
-    #         self.permission_classes = [IsAuthenticated  ]
-    #     elif self.action in ['create']:
-    #         self.permission_classes = [IsAuthenticated , IsSuperAdmin ]
-    #     return super().get_permissions()
     
     
 
@@ -270,75 +221,7 @@ class SectorAPIView(viewsets.ModelViewSet):
     
     
     
-# class SectorView(viewsets.ModelViewSet):
-    
-#     serializer_class = SectorSerializer
-#     queryset = Sector.objects.all()
-#     permission_classes = [IsAdminUser, ]
 
-
-#     def get_queryset(self):
-#         return super().get_queryset()
-    
-
-
-# class SectorAPIView(viewsets.ModelViewSet):
-#     # permission_classes = (IsAuthenticated,IsSectorAdmin )
-#     serializer_class = SectorSerializer
-   
-#     queryset = Sector.objects.all().order_by("-created_at")
-#     def get_queryset(self):
-#         report = Sector.objects.all().order_by("-created_at")
-#         return report
-    
-#     def create(self, request, **kwargs):
-#         address = request.data['address']
-#         print("address is" , address)
-#         g = geocoder.google(address)
-#         print("after geo coder is ", g)
-#         latitude = g.latlng[0]
-#         longtiude = g.latlng[1]
-#         pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude))
-#         serializer_obj = SectorSerializer(data=request.data)
-        
-#         if serializer_obj.is_valid():
-#             serializer_obj.save(location=pnt)
-#             return Response({"msg": 'Data Created'}, status=status.HTTP_201_CREATED)
-#         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
-   
-    
-    
-class RoleView(generics.GenericAPIView):
-    
-    serializer_class = RoleSerializer
-    queryset = Role.objects.all()
-    permission_classes = [AllowAny, ]
-
-    def post(self,request):
-
-        ad = Role.objects.get_or_create(id=1)
-        ser1 = RoleSerializer(ad)
-
-        sec = Role.objects.get_or_create(id=2)
-        ser2 = RoleSerializer(sec)
-    
-        custom = Role.objects.get_or_create(id=3)
-        ser3 = RoleSerializer(custom)
-        
-        counts = Role.objects.count()
-        if counts>=3:
-            roles = Role.objects.all()
-            ser = RoleSerializer(roles,many=True)
-            return JsonResponse({"Roles":ser.data,"message":"All Roles are already created"})
-        else: 
-            return JsonResponse({"role1":ser1.data,"role2":ser2.data,"role3":ser3.data,"count":counts}) 
-
-        
-
-        
-    
 
 class TestView(APIView):
     def get(self, request):

@@ -2,7 +2,7 @@ import  random as rand
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from accounts.models import CustomUser, PhoneOTP
+from accounts.models import User, PhoneOTP
 from rest_framework.views import APIView
 from .serializers import RegistorUserSerializer  , LoginSerializer ,UpdateUserSerializer
 from rest_framework import permissions, generics, status
@@ -55,7 +55,7 @@ class ValidatePhoneSendOTP(APIView):
         phone_number = request.data.get('phone_number')
         if phone_number:
             phone = str(phone_number)
-            user = CustomUser.objects.filter(phone_number__iexact = phone)
+            user = User.objects.filter(phone_number__iexact = phone)
             if user.exists():
                 otp = send_otp(phone)
                 print(phone, otp)
@@ -265,7 +265,7 @@ class Register(APIView):
 
         if phone_number and first_name and last_name:
             phone_number = str(phone_number)
-            user = CustomUser.objects.filter(phone_number__iexact = phone_number)
+            user = User.objects.filter(phone_number__iexact = phone_number)
             if user.exists():
                 return Response({'status': False, 'message': 'Phone Number already have account associated.'})
             else:
@@ -331,14 +331,14 @@ class EditProfile(APIView):
     def patch(self, request, format=None):
         try:
             # exist then update
-            profile = CustomUser.objects.get(id=request.user.id)
+            profile = User.objects.get(id=request.user.id)
             serializer = UpdateUserSerializer(profile, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
             else:
                 return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
-        except CustomUser.DoesNotExist:
+        except User.DoesNotExist:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
     
     
