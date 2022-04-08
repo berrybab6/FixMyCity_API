@@ -29,9 +29,9 @@ urlpatterns = [
     path('login_sectoradmin/', LoginSectorAdminView.as_view()),
     
     path('api/', include('rest_framework.urls')),
-    path('user_count/', UserCount.as_view()),
-    path('sector_count/', SectorCount.as_view()),
-    path('active_sectors/', ActiveSectorCount.as_view()),
+    # path('user_count/', UserCount.as_view()),
+    # path('sector_count/', SectorCount.as_view()),
+    # path('active_sectors/', ActiveSectorCount.as_view()),
     # path('sector/',SectorView.as_view())
 #     path('test/', TestView.as_view()),
 #     path('edit/<int:id>/',EditProfile.as_view()),

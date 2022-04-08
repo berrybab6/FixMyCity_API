@@ -112,14 +112,7 @@ class Sector(models.Model):
     
     
 class User(AbstractBaseUser, PermissionsMixin):
-<<<<<<< HEAD
-    roles = models.ForeignKey(Role, on_delete=models.CASCADE,db_column='rolesId')
-
-# class Admins(models.Model):
-    # roles = models.ManyToManyField(Role)
-=======
     roles = models.ForeignKey(Role, on_delete=models.CASCADE,db_column='rolesId', null=True)
->>>>>>> b08d472458cba62fba5e61d639022455d5cd8399
     id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=255 , null=False , unique=True)
     created_at = models.DateTimeField(auto_now=True)
@@ -196,24 +189,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 # Create your models here.
 
 
-<<<<<<< HEAD
-class Sector(models.Model):
-
-    TELE = 1
-    WATER_AND_SEWAGE = 2
-    ROADS_AUTHORITY = 3
-    ELPA = 4
-    SECTOR_TYPE = ((TELE,'tele'), (WATER_AND_SEWAGE, 'water_and_sewage'), (ROADS_AUTHORITY, 'roads_authority'), (ELPA, 'elpa'))       
-    sector_type = models.PositiveSmallIntegerField(
-        choices=SECTOR_TYPE, null=True)
-    district_name = models.CharField(unique=True,max_length=150)
-    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
-    phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True) # validators should be a list
-    created_at = models.DateTimeField(auto_now_add=True)
-    email = models.EmailField(max_length=150, unique=True)
-    location = models.PointField(null=True, blank=True,)
-    address = models.CharField(max_length=255 , null=True)
-=======
 # class Sector(models.Model):
 #     district_name = models.CharField(unique=True,max_length=150)
 #     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
@@ -222,7 +197,6 @@ class Sector(models.Model):
 #     email = models.EmailField(max_length=150, unique=True)
 #     location = models.PointField(null=True, blank=True,)
 #     address = models.CharField(max_length=255 , null=True)
->>>>>>> b08d472458cba62fba5e61d639022455d5cd8399
     
 #     def __str__(self):
 #         return self.district_name
@@ -233,18 +207,6 @@ class Sector(models.Model):
     
     
     
-<<<<<<< HEAD
-class SectorAdmin(User):
-    sector_user = models.OneToOneField(User, on_delete=models.CASCADE, parent_link=True)
-    email = models.EmailField(max_length=100, null=False)
-    main_sector = models.BooleanField(default=False)
-    sector = models.ForeignKey(Sector, on_delete=models.CASCADE,related_name="sector", null=True)
-    
-    @property
-    def is_main_sector(self):
-        return self.main_sector
-    objects = CustomUserManager()
-=======
 # class SectorAdmin(User):
 #     sector_user = models.OneToOneField(User, on_delete=models.CASCADE, parent_link=True)
 #     email = models.EmailField(max_length=100, null=False)
@@ -254,7 +216,6 @@ class SectorAdmin(User):
 #     def is_main_sector(self):
 #         return self.main_sector
 #     objects = CustomUserManager()
->>>>>>> b08d472458cba62fba5e61d639022455d5cd8399
     
     
     

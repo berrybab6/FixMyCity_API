@@ -11,6 +11,7 @@ from rest_framework.pagination import PageNumberPagination
 from permissions import IsSectorAdmin , IsCustomUser, IsSuperAdmin
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.db.models.functions import Distance
+from .apps import ReportsConfig
 
 
 
@@ -30,11 +31,23 @@ class ReportAPIView(viewsets.ModelViewSet):
         longtiude = request.data['longtiude']
         pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude))
         serializer_obj = ReportSerializer(data=request.data)
-        
-        if serializer_obj.is_valid():
-            serializer_obj.save(location=pnt)
-            return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
-        return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+        image = request.data['image']
+        # lin_reg_model = ReportsConfig.model
+        # image_predicted = lin_reg_model.predict(image)
+        image_predicted = 0
+        if image_predicted == 1:
+            serializer_obj = ReportSerializer(data=request.data)
+            if serializer_obj.is_valid():
+                serializer_obj.save(location=pnt , spamStatus=True)
+                return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
+            return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            serializer_obj = ReportSerializer(data=request.data , )
+            if serializer_obj.is_valid():
+                serializer_obj.save(location=pnt , spamStatus=False)
+                return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
+            return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+            
     
     
     
