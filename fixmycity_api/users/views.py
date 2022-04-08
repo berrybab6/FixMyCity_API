@@ -10,7 +10,7 @@ from django.contrib.auth import login
 from accounts.utils import Utils
 from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny
-from twilio.rest import Client
+# from twilio.rest import Client
 from rest_framework.permissions import IsAuthenticated
 from permissions import IsCustomUser
 

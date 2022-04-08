@@ -126,9 +126,9 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'scene',
+        'NAME': 'fixmycity',
         'USER': 'postgres',
-        'PASSWORD': 'new_password',
+        'PASSWORD': 'test123',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
