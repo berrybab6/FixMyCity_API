@@ -2,7 +2,7 @@ from dis import dis
 from tracemalloc import start
 from rest_framework.views import APIView
 from .models import F, Report
-from .serializers import ReportSerializer ,ReportUpdateSerializer
+from .serializers import ReportSerializer ,ReportUpdateSerializer, MyReportUpdateSerializer
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -21,9 +21,9 @@ class ReportAPIView(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch']
     serializer_class = ReportSerializer
     pagination_class = PageNumberPagination
-    queryset = Report.objects.all().order_by("-postedAt")
+    queryset = Report.objects.filter(spamStatus=False).order_by("-postedAt")
     def get_queryset(self):
-        report = Report.objects.all().order_by("-postedAt")
+        report = Report.objects.filter(spamStatus=False).order_by("-postedAt")
         return report
     
     def create(self, request, **kwargs):
@@ -55,7 +55,7 @@ class ReportAPIView(viewsets.ModelViewSet):
 
     
     def list(self, request, *args, **kwargs):
-        report = Report.objects.all().order_by("-postedAt")
+        report = Report.objects.filter(spamStatus=False).order_by("-postedAt")
         serializer = ReportSerializer(report , many= True)
         qs = super().get_queryset()
       
@@ -128,7 +128,7 @@ class LikeReportView(APIView):
             report.noOfLikes.add(request.user.id)
             return Response({"message": 'you liked the report'}, status=status.HTTP_201_CREATED)
         
-import datetime
+
 class ChartDataView(APIView):
     # permission_classes = (IsAuthenticated , IsSectorAdmin)
     permission_classes = (permissions.AllowAny,)
@@ -175,6 +175,42 @@ class ChartDataView(APIView):
             "default": default_items
         }
         return Response(data)
+    
+    
+    
+    
+class MyReportAPIView(viewsets.ModelViewSet):
+    permission_classes = (permissions.AllowAny,)
+    permission_classes = (IsAuthenticated,IsCustomUser )
+    http_method_names = ['get', 'patch']
+    serializer_class = ReportSerializer
+    pagination_class = PageNumberPagination
+    queryset = Report.objects.all().order_by("-postedAt")
+    
+    
+     
+    def list(self, request, *args, **kwargs):
+        report = Report.objects.filter(user=self.request.user).order_by("-postedAt")
+        serializer = ReportSerializer(report , many= True)
+        return Response(serializer.data)
+    
+    def partial_update(self, request, pk=None):
+        id = self.kwargs.get("pk")
+        try:
+            report = Report.objects.filter(user=self.request.user).get(id=id)
+            reportserializer = MyReportUpdateSerializer(report, data=request.data, partial=True)
+            if reportserializer.is_valid():
+                reportserializer.save()
+                return Response(reportserializer.data, status=status.HTTP_200_OK)
+            return Response(reportserializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Report.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+    
+  
+
+    
+    
+    
     
     
 

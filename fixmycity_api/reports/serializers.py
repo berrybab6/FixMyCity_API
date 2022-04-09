@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Report
-from accounts.models import Sector , User
+from accounts.models import Sector , User 
 from accounts.serializers import SectorSerializer
 from users.serializers import RegistorUserSerializer
 
@@ -49,6 +49,12 @@ class ReportUpdateSerializer(serializers.ModelSerializer):
         # fields = "__all__"
           
 
+
+class MyReportUpdateSerializer(serializers.ModelSerializer):
+   class Meta:
+        model = Report
+        fields = ('tag' , 'sector'  , 'description')
+        read_only_fields = ("id" ,"image",  "postedAt" ,"distance" , "like_count" , "user", "location"  )
 
 # class LocationSerializer(serializers.ModelSerializer):
 #     class Meta:
