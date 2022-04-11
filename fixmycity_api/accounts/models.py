@@ -170,7 +170,8 @@ class Sector(models.Model):
     email = models.EmailField(max_length=150, unique=True)
     location = models.PointField(null=True, blank=True,)
     address = models.CharField(max_length=255 , null=True)
-    
+    main_sector = models.BooleanField(default=False)
+    sector_logo = models.ImageField(upload_to="logo", blank=True, null = True)
     def __str__(self):
         return self.district_name
     
