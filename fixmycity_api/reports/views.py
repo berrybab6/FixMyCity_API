@@ -1,5 +1,10 @@
 from dis import dis
 from tracemalloc import start
+
+from django.http import JsonResponse
+from accounts.models import Sector, SectorAdmin
+from accounts.serializers import SectorAdminSerializer, SectorSerializer
+
 from rest_framework.views import APIView
 from .models import F, Report
 from .serializers import ReportSerializer ,ReportUpdateSerializer
@@ -11,6 +16,7 @@ from rest_framework.pagination import PageNumberPagination
 from permissions import IsSectorAdmin , IsCustomUser, IsSuperAdmin
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.db.models.functions import Distance
+
 
 
 
@@ -101,6 +107,36 @@ class ReportAPIView(viewsets.ModelViewSet):
 
 
 
+class ReportStatusView(APIView):
+    # permission_classes = (IsAuthenticated, IsCustomUser)
+    queryset = [Sector.objects.all(), SectorAdmin.objects.all(), Report.objects.all()]
+    serializer_classes = [ SectorAdminSerializer, SectorSerializer, ReportSerializer]
+    permission_classes = (permissions.AllowAny,)
+    def get(self, request, pk=None):
+        # id = self.kwargs.get("pk")
+        sector_user = SectorAdmin.objects.get(id=pk)
+        if sector_user:
+            # ser = SectorAdminSerializer(sector_user)
+            sector_branch = sector_user.sector
+            sector_type = sector_user.sector.sector_type
+            if sector_type:
+                sectors = Sector.objects.filter(sector_type=sector_type)
+                
+                branches = sectors.count()
+                ser = SectorSerializer(sectors, many=True)
+                active_report_count = Report.objects.filter(state=False,sector=sector_branch).count()
+                resolved_report_count = Report.objects.filter(state=True, sector=sector_branch).count()
+                spam_report_count = Report.objects.filter(spamStatus=True,sector=sector_branch).count()
+
+            
+                # ser = SectorSerializer(branches, many=True)
+                return JsonResponse({"sectors":ser.data, "count":{"branch_count":[branches,"Branch Number"], "active_report":[active_report_count,"Active Reports"],"resolved_report":[resolved_report_count,"Resolved Reports"], "spam_report":[spam_report_count,"Spam Reports"]}})
+            else:
+                return JsonResponse({"error":"NO Sectors with this account"})
+        else:
+            return JsonResponse({"error":"No Data"})
+
+        
 class LikeReportView(APIView):
     # permission_classes = (IsAuthenticated, IsCustomUser)
     permission_classes = (permissions.AllowAny,)
