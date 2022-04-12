@@ -44,7 +44,7 @@ class ReportSerializer(serializers.ModelSerializer):
 class ReportUpdateSerializer(serializers.ModelSerializer):
    class Meta:
         model = Report
-        fields = ('id' , 'sector' ,'state' , 'spamStatus' )
+        fields = ( 'sector' ,'state' , 'spamStatus' )
         read_only_fields = ("id" ,"image", "tag", "description",  "postedAt" ,"distance" , "like_count" , "sector", "user", "location"  )
         # fields = "__all__"
           

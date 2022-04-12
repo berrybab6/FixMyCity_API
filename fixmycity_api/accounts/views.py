@@ -119,7 +119,7 @@ class LoginView(APIView):
         serializedUser = UserSerializer(user)
         token = Utils.encode_token(user)
         
-        return Response({"data":serializedUser.data, "token":token})
+        return Response({"message":"sucess", "token":token})
         
     def get_queryset(self):
         return super().get_queryset()

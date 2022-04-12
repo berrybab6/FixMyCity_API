@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers
 import django.contrib.auth.password_validation as validators
 from django.core.mail import EmailMessage
+from rest_framework.response import Response
 
 
 import threading
@@ -54,7 +55,7 @@ class Utils:
             return user
             
         
-        raise serializers.ValidationError("Invalid username/password. Please try again!")
+        return Response({"message":"invalid username or password"})
     
     
     
