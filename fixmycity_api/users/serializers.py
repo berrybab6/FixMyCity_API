@@ -6,7 +6,7 @@ from accounts.models import CustomUser , Role
 class RegistorUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('first_name', 'last_name','phone_number' , 'ProfileImage')
+        fields = ('first_name', 'last_name','phone_number' , 'ProfileImage','full_name')
         read_only_fields = ['id']
         
 

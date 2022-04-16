@@ -207,6 +207,8 @@ class CustomUser(User):
     def __str__(self):
         return self.phone_number
     
+    def get_full_name(self):
+        return str(self.first_name) + ":"+ str(self.last_name)
     
     
 class PhoneOTP(models.Model):
