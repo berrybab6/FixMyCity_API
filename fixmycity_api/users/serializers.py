@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from accounts.models import User , Role
+from accounts.models import PhoneOTP, User , Role
 
 
 
@@ -37,4 +37,20 @@ class UpdateUserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('ProfileImage',)
         read_only_fields = ('id' , 'phone_number' , 'first_name' , 'last_name',)  
+        
+        
+class ValidatePhoneSerializer(serializers.ModelSerializer):
+   
+    class Meta:
+        model = PhoneOTP
+        fields = ('phone_number',)
+        
+        
+class ValidateOtpSerializer(serializers.ModelSerializer):
+   
+    class Meta:
+        model = PhoneOTP
+        fields = ('phone_number', 'otp')
+       
+       
       

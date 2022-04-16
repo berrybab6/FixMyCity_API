@@ -6,6 +6,7 @@ from users.serializers import RegistorUserSerializer
 
 
 class ReportSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
     
     distance = serializers.DecimalField(source="distance.m" , max_digits=100 , decimal_places=2 , required= False , read_only = True)
     like_count = serializers.SerializerMethodField()

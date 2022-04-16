@@ -67,9 +67,12 @@ class EmailVerificationSerializer(serializers.ModelSerializer):
     
     
 
-class LoginSerializer(serializers.Serializer):
+class LoginSerializer(serializers.ModelSerializer):
     password = serializers.CharField(required=True, write_only=True)
     username = serializers.CharField(required=True)
+    class Meta:
+        model = User
+        fields = ['username' , 'password']
     
 
 class LoginSectorAdminSerializer(serializers.Serializer):

@@ -20,6 +20,7 @@ from django.core.mail import EmailMessage , EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils.crypto import get_random_string
+from drf_yasg.utils import swagger_auto_schema
 
 
 class CustomRedirect(HttpResponsePermanentRedirect):
@@ -29,6 +30,9 @@ class CustomRedirect(HttpResponsePermanentRedirect):
 class RegisterView(APIView):
     permission_classes = [AllowAny]
     serializer_class = SectorAdminSerializer
+     
+     
+    @swagger_auto_schema(request_body=LoginSerializer)
     def post(self,request):
         user = request.data
         serializer = self.serializer_class(data=user)
@@ -59,6 +63,7 @@ class RegisterView(APIView):
 class VerifyEmail(APIView):
     permission_classes = [AllowAny, ]
     serializer_class = EmailVerificationSerializer
+    @swagger_auto_schema(request_body=EmailVerificationSerializer)
     def post(self, request):
         token = request.data['token']
         print(token)
@@ -109,6 +114,8 @@ class LoginView(APIView):
     permission_classes = [AllowAny, ]
     queryset = User.objects.all()
     serializer_class = LoginSerializer
+     
+    @swagger_auto_schema(request_body=LoginSerializer)
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
 
@@ -116,7 +123,7 @@ class LoginView(APIView):
 
         user = Utils.authenticate_user(serializer.validated_data)
         # queryset = user
-        serializedUser = UserSerializer(user)
+        # serializedUser = UserSerializer(user)
         token = Utils.encode_token(user)
         
         return Response({"message":"sucess", "token":token})
@@ -128,6 +135,10 @@ class LoginSectorAdminView(APIView):
     permission_classes = [AllowAny, ]
     queryset = User.objects.all()
     serializer_class = LoginSectorAdminSerializer
+    #  serializer_class = SectorAdminSerializer
+     
+     
+    @swagger_auto_schema(request_body=LoginSectorAdminSerializer)
     def post(self, request):
         serializer = LoginSectorAdminSerializer(data=request.data)
 

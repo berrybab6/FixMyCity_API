@@ -152,6 +152,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://ef71-197-156-86-181.ngrok.io'
 ]
 CSRF_TRUSTED_ORIGINS = [
+    "https://294a-197-156-77-127.ngrok.io",
     "http://localhost:3002",
     'https://fixmycity-24.herokuapp.com',
     "https://fixmycity5-24.herokuapp.com",
