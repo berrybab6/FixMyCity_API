@@ -1,3 +1,4 @@
+from numpy import percentile
 from rest_framework import generics, status, permissions, serializers, viewsets
 # from rest_framework import serializers
 from rest_framework.views import APIView
@@ -5,10 +6,10 @@ from django.shortcuts import get_object_or_404
 from django.contrib.gis.geos import GEOSGeometry
 from rest_framework.response import Response
 from django.http import JsonResponse
-from .serializers import LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer
+from .serializers import CustomUserSerializer, LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer
 from .serializers import LoginSerializer, RoleSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer
 from .utils import Utils
-from .models import Role, Sector, User,SectorAdmin
+from .models import CustomUser, Role, Sector, User,SectorAdmin
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 from permissions import IsSectorAdmin, IsSuperAdmin
@@ -18,6 +19,7 @@ from permissions import IsSectorAdmin, IsSuperAdmin
 
 from .models import CustomUser as u
 # from users.serializers import RegistorUserSerializer as customU
+
 class UserCount(APIView):
     permission_classes = [AllowAny,]
     queryset = [u.objects.all(), SectorAdmin.objects.all()]
@@ -55,46 +57,34 @@ class ActiveSectorCount(APIView):
     permission_classes = [AllowAny,]
     queryset = [SectorAdmin.objects.all()]
     serializer_class = [SectorAdminSerializer]
+    def percentage(self, part, whole):
+        perc = 0
+        if(whole > 0):
+            perc = 100 * float(part)/float(whole)
+        return int(perc)
     def get(self, request):
+         
+        valCount = []
+        percCount = []
         
-        # water = SectorAdmin.objects.filter(sector=1).count()
-        waters = Sector.objects.filter(sector_type = 2)
-        teles = Sector.objects.filter(sector_type = 1)
-        roads = Sector.objects.filter(sector_type = 3)
-        elpas = Sector.objects.filter(sector_type = 4)
-        # water3 = SectorAdmin.objects.all()
-        water_count = 0
-        elpa_count = 0
-        road_count = 0
-        tele_count = 0
-
+        names = ["Telecommunication", "Water And Sewage", "Roads Authority", "ELPA"]
+        val3 = []
         ########## Count Active Water Sector Admins
-        for water in waters:
-            
-            sectors = SectorAdmin.objects.filter(active = True, sector=water)
-            if sectors :
-                water_count = water_count+1
+        for i in range(0, 4):
+            waters = Sector.objects.filter(sector_type = i+1)
 
-        ########## Count Active Telecommunication Sector Admins
-        for tele in teles:
-            
-            sectors = SectorAdmin.objects.filter(active = True, sector=tele)
-            if sectors :
-                tele_count = tele_count+1
+            # vals.append(waters)
 
-        ########## Count Active Roads Authority Sector Admins
-        for road in roads:
-            
-            sectors = SectorAdmin.objects.filter(active = True, sector=road)
-            if sectors :
-                road_count = road_count+1
-                ########## Count Active Roads Authority Sector Admins
-        for elpa in elpas:
-            
-            sectors = SectorAdmin.objects.filter(active = True, sector=elpa)
-            if sectors :
-                elpa_count = elpa_count+1
-        return Response({"waterSectors":water_count, "teleCount":tele_count, "roadCount":road_count, "elpaCount":elpa_count})
+            for water in waters:
+                
+                water_count = SectorAdmin.objects.filter(active = True, sector=water).count()
+                t_sectors = SectorAdmin.objects.filter(sector=water).count()
+                valCount.append(water_count)
+                water_perc = self.percentage(water_count, t_sectors)
+                percCount.append(water_perc)
+            val3.append([valCount[i], percCount[i],names[i]])
+        return Response(val3)
+        # return Response({"waterSectors":[water_count, water_perc], "teleCount":tele_count, "roadCount":road_count, "elpaCount":[elpa_count, elpa_perc]})
       
     def get_queryset(self):
         return super().get_queryset()
@@ -172,8 +162,89 @@ class LoginSectorAdminView(APIView):
     def get_queryset(self):
         return super().get_queryset()
     
+   
+class MainSectorAPIView(APIView):
+    permission_classes = [AllowAny, ]
+    queryset = Sector.objects.filter(main_sector = True)
+    serializer_class = SectorSerializer
+   
     
+    def get_queryset(self):
+        return super().get_queryset()
+    def get(self, request):
+        s = Sector.objects.filter(main_sector = True)
+        if s:
+            ser = SectorSerializer(s, many=True)
+            return JsonResponse({"sectors":ser.data})
+        else:
+            return JsonResponse({"error":"No data"})
+
+
+class UserView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    def get(self, request):
+        users = User.objects.all()
+        if users:
+            ser = UserSerializer(users, many=True)
+            return JsonResponse({"user":ser.data})
+        else:
+            JsonResponse({"error":"NO User Found","user":[]})
+class UserDetailView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    def get(self, request, pk=None):
+        user = User.objects.get(id = pk)
+        if user:
+            ser = UserSerializer(user)
+            return JsonResponse({"user":ser.data})
+        else:
+            JsonResponse({"error":"NO User Found"})
+
+class CustomUserAPIView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    # permission_classes = ( IsAuthenticated,IsSuperAdmin,)
+    # http_method_names = ['get', 'post', 'patch']
+    serializer_class = CustomUserSerializer
+
+    pagination_class = PageNumberPagination
+    # queryset = Sector.objects.all().order_by("-created_at")
+    queryset = CustomUser.objects.all()
+
+    def get_queryset(self):
+        user = CustomUser.objects.all()
+        return user
+    def get(self, request):
+        users = CustomUser.objects.filter(active = True)
+        if users:
+            ser = CustomUserSerializer(users, many=True)
+            return JsonResponse({"users":ser.data})
+        else :
+            return JsonResponse({"users":[]})
+
+class BanCustomUserAPIView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = CustomUserSerializer
+
+    pagination_class = PageNumberPagination
+    queryset = CustomUser.objects.all()
     
+    def get_queryset(self):
+        user = CustomUser.objects.all()
+        return user
+    
+    def put(self, request, pk=None):
+        try:
+            user = CustomUser.objects.get(id=pk)
+            if user:
+                user.active = False
+                user.save()
+                return Response({"message":"User is Banned"}, status=status.HTTP_200_OK)
+            return Response({"errors":"an error occured"}, status=status.HTTP_400_BAD_REQUEST)
+        except Sector.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 class SectorAPIView(viewsets.ModelViewSet):
     permission_classes = (permissions.AllowAny,)
     # permission_classes = ( IsAuthenticated,IsSuperAdmin,)
@@ -181,9 +252,11 @@ class SectorAPIView(viewsets.ModelViewSet):
     serializer_class = SectorSerializer
 
     pagination_class = PageNumberPagination
-    queryset = Sector.objects.all().order_by("-created_at")
+    # queryset = Sector.objects.all().order_by("-created_at")
+    queryset = Sector.objects.all().order_by("-sector_type")
+
     def get_queryset(self):
-        sector = Sector.objects.all().order_by("-created_at")
+        sector = Sector.objects.all().order_by("-sector_type")
         return sector
     
     def create(self, request, **kwargs):

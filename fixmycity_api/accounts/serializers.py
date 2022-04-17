@@ -1,6 +1,6 @@
 from numpy import full
 from rest_framework import serializers, fields
-from .models import Role, Sector, SectorAdmin, User
+from .models import CustomUser, Role, Sector, SectorAdmin, User
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,7 +27,12 @@ class LoginSectorAdminSerializer(serializers.Serializer):
 
     # def create(self, validated_data):
         # return User.objects.create(**validated_data)
-
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = "__all__"
+        # extra_kwargs = {'password': {'write_only': True}}
+        read_only_fields = ['id']  
 class SectorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sector

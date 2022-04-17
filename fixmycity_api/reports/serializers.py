@@ -17,9 +17,7 @@ class ReportSerializer(serializers.ModelSerializer):
         
     def get_like_count(self, obj):
         return obj.noOfLikes.count()
-    
-    
-    
+   
     
         
     
@@ -48,7 +46,11 @@ class ReportUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ("id" ,"image", "tag", "description",  "postedAt" ,"distance" , "like_count" , "sector", "user", "location"  )
         # fields = "__all__"
           
-
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sector
+        fields = ("location",)
+    
 
 # class LocationSerializer(serializers.ModelSerializer):
 #     class Meta:
