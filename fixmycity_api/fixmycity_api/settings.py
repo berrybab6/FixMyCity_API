@@ -224,6 +224,16 @@ cloudinary.config(
     api_secret="1Adci2An4RTqgFakBpoF5vMz63I"
 )
 
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
+
 
 # CLOUDINARY_STORAGE = {
 #     'CLOUD_NAME': config('CLOUD_NAME', default=""),

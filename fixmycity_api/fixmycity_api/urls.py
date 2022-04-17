@@ -47,7 +47,7 @@ urlpatterns = [
     path('v1/', include('announcment.urls')),
     # path('v1/announcement/' , include('announcment.urls')),
     
-    path('v1/normaluser/',include('users.urls')),
+    path('v1/customUser/',include('users.urls')),
     path('', schema_view.with_ui('swagger',
                                  cache_timeout=0), name='schema-swagger-ui'),
 

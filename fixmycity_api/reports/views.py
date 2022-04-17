@@ -100,15 +100,15 @@ class ReportAPIView(viewsets.ModelViewSet):
         
         
         
-    # def get_permissions(self):
-    #     """Set custom permissions for each action."""
-    #     if self.action in [ 'partial_update', 'destroy', ]:
-    #         self.permission_classes = [IsAuthenticated, IsSectorAdmin]
-    #     elif self.action in ['list' ,]:
-    #         self.permission_classes = [IsAuthenticated  ]
-    #     elif self.action in ['create']:
-    #         self.permission_classes = [IsAuthenticated , IsCustomUser ]
-    #     return super().get_permissions()
+    def get_permissions(self):
+        """Set custom permissions for each action."""
+        if self.action in [ 'partial_update', 'destroy', ]:
+            self.permission_classes = [IsAuthenticated, IsSectorAdmin]
+        elif self.action in ['list' ,]:
+            self.permission_classes = [IsAuthenticated  ]
+        elif self.action in ['create']:
+            self.permission_classes = [IsAuthenticated , IsCustomUser ]
+        return super().get_permissions()
     
     
 
