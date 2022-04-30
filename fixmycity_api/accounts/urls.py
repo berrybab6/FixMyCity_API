@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 # # from graphene_file_upload.django import FileUploadGraphQLView
 
 from django.urls import include
-from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestView,SectorAPIView , LoginSectorAdminView , VerifyEmail 
+from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestView,SectorAPIView , LoginSectorAdminView , VerifyEmail , LoginSectorAdmin , LoginSuperAdmin
 #
 from rest_framework import routers
 app_name = 'accounts'
@@ -25,10 +25,16 @@ urlpatterns = [
     path('email-verify/', VerifyEmail.as_view(), name='email-verify'),
     path('',include(router.urls)),
 
-    path('login/', LoginView.as_view() , name='login'),
-    path('login_sectoradmin/', LoginSectorAdminView.as_view()),
+    # path('login/', LoginView.as_view() , name='login'),
+    # path('login_sectoradmin/', LoginSectorAdminView.as_view()),
     
     path('api/', include('rest_framework.urls')),
+    
+    
+    # path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('login_sectoradmin/', LoginSectorAdmin.as_view(), name='login_sector_admin'),
+    path('login_superadmin/', LoginSuperAdmin.as_view(),   name='login_super_admin'),
+    # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # path('user_count/', UserCount.as_view()),
     # path('sector_count/', SectorCount.as_view()),
     # path('active_sectors/', ActiveSectorCount.as_view()),

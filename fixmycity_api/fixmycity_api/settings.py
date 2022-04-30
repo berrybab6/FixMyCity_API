@@ -80,8 +80,9 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK  = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        # 'fixmycity_api.jwt.JwtAuthentication',
        
-         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
@@ -98,6 +99,10 @@ REST_FRAMEWORK  = {
     
     
     }
+AUTHENTICATION_BACKENDS = [
+    # Application custom auth backend
+    'fixmycity_api.auth.AuthentificationBackend',
+]
 
 ROOT_URLCONF = 'fixmycity_api.urls'
 
@@ -152,6 +157,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://ef71-197-156-86-181.ngrok.io'
 ]
 CSRF_TRUSTED_ORIGINS = [
+    "https://2a06-197-156-86-124.ngrok.io",
     "https://294a-197-156-77-127.ngrok.io",
     "http://localhost:3002",
     'https://fixmycity-24.herokuapp.com',

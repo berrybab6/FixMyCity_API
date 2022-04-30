@@ -1,5 +1,6 @@
 from dis import dis
 from tracemalloc import start
+from turtle import distance
 from rest_framework.views import APIView
 from .models import F, Report
 from .serializers import ReportSerializer ,ReportUpdateSerializer, MyReportUpdateSerializer
@@ -12,19 +13,47 @@ from permissions import IsSectorAdmin , IsCustomUser, IsSuperAdmin
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.db.models.functions import Distance
 from .apps import ReportsConfig
+from rest_framework.decorators import action
 
 
 
 class ReportAPIView(viewsets.ModelViewSet):
-    permission_classes = (permissions.AllowAny,)
+    # permission_classes = (IsAuthenticated,)
+    # authentication_classes = []
     # permission_classes = (IsAuthenticated,IsSectorAdmin )
     http_method_names = ['get', 'post', 'patch']
     serializer_class = ReportSerializer
     pagination_class = PageNumberPagination
-    queryset = Report.objects.filter(spamStatus=False).order_by("-postedAt")
+    queryset = Report.objects.all().order_by("-postedAt")
     def get_queryset(self):
-        report = Report.objects.filter(spamStatus=False).order_by("-postedAt")
+        report = Report.objects.all().order_by("-postedAt")
         return report
+    
+    @action(detail=False)
+    def getreportbasedonSectorName(self , request):
+        sector_name=self.request.user.sector
+        print(sector_name)
+        report = Report.objects.filter(sector__district_name=sector_name).order_by("-postedAt")
+        serializer = ReportSerializer(report , many= True)
+        return Response(serializer.data)
+    
+    
+    @action(detail=False)
+    def getreportbasedonSectorNameandLocation(self , request):
+        sector_name=self.request.user.sector
+        sector_location = self.request.user.sector.location
+        print(sector_location)
+        qs = super().get_queryset()
+        pnt = sector_location
+        qs = qs.annotate(distance= Distance('location' , pnt)).filter(distance__lte=3000 ,sector__district_name=sector_name ).order_by("-postedAt")
+        serializer = ReportSerializer(qs , many= True)
+        return Response(serializer.data)
+    
+    
+    
+    
+    
+        
     
     def create(self, request, **kwargs):
         latitude = request.data['latitude']
@@ -55,7 +84,7 @@ class ReportAPIView(viewsets.ModelViewSet):
 
     
     def list(self, request, *args, **kwargs):
-        report = Report.objects.filter(spamStatus=False).order_by("-postedAt")
+        report = Report.objects.all().order_by("-postedAt")
         serializer = ReportSerializer(report , many= True)
         qs = super().get_queryset()
       
@@ -63,6 +92,7 @@ class ReportAPIView(viewsets.ModelViewSet):
         longtiude = self.request.query_params.get('lng', None)
         if latitude and longtiude:
             pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude) , srid=4326)
+            distance = Distance('location' , pnt)
             qs = qs.annotate(distance= Distance('location' , pnt)).filter(distance__lte=3000).order_by("-postedAt")
             serializer = ReportSerializer(qs , many= True)
         return Response(serializer.data)
@@ -102,7 +132,7 @@ class ReportAPIView(viewsets.ModelViewSet):
         
     def get_permissions(self):
         """Set custom permissions for each action."""
-        if self.action in [ 'partial_update', 'destroy', ]:
+        if self.action in [ 'partial_update', 'destroy', 'getreportbasedonSectorName' , 'getreportbasedonSectorNameandLocation']:
             self.permission_classes = [IsAuthenticated, IsSectorAdmin]
         elif self.action in ['list' ,]:
             self.permission_classes = [IsAuthenticated  ]

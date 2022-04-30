@@ -1,4 +1,5 @@
 
+from http.client import ImproperConnectionState
 from pickle import TRUE
 from tokenize import blank_re
 from django.conf import settings
@@ -10,6 +11,9 @@ from django.core.validators import RegexValidator
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 import random
+import jwt
+from django.conf import settings
+from datetime import datetime, timedelta
 # from graphql_relay import to_global_id
 # from accounts.managers import UserManager
 
@@ -131,7 +135,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
     USERNAME_FIELD = 'username'
-    EMAIL_FIELD = 'username'
+    EMAIL_FIELD = 'email'
     # objects = UserManager()
     REQUIRED_FIELDS =[]
 
@@ -166,6 +170,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.active
     def __str__(self):
         return str(self.id)
+    
+    # @property
+    # def token(self):
+    #     print(self.sector.district_name)
+    #     print(self.role)
+    #     print("here")
+    #     print(self.sector)
+    #     if self.role == 2:
+    #         token = jwt.encode({'user_id':self.id , 'sector': self.sector.district_name ,'exp': datetime.utcnow() + timedelta(hours=24) }, settings.SECRET_KEY, algorithm='HS256')
+    #         print(token)
+    #         return token
     
     def save(self, *args, **kwargs):
         if not self.id:
