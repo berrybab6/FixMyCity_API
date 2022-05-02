@@ -127,10 +127,10 @@ class ReportAPIView(viewsets.ModelViewSet):
                 reportserializer.save()
                 serializer = ReportSerializer(report)
 
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response({"detail" : "Report updated successfully!"}, status=status.HTTP_200_OK)
             return Response(reportserializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Report.DoesNotExist:
-            return Response({"detail" : 'Report doest not exist or you dont have permission to update it'} , status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail" : 'Report does not exist or you dont have permission to update it'} , status=status.HTTP_404_NOT_FOUND)
         
         
         
