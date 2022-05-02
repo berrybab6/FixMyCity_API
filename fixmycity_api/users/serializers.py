@@ -1,18 +1,20 @@
 from rest_framework import serializers
-from accounts.models import CustomUser , Role
+from accounts.models import PhoneOTP, User , Role
 
 
 
 class RegistorUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CustomUser
+
+        model = User
         fields = ('first_name', 'last_name','phone_number' , 'ProfileImage','full_name')
+
         read_only_fields = ['id']
         
 
     def create(self, validated_data):
         role = Role.objects.get(id=3)
-        user = CustomUser(first_name= validated_data['first_name'], last_name= validated_data['last_name'], phone_number= validated_data['phone_number'] ,ProfileImage = validated_data['ProfileImage'], roles = role )
+        user = User(first_name= validated_data['first_name'], last_name= validated_data['last_name'], phone_number= validated_data['phone_number'] ,ProfileImage = validated_data['ProfileImage'], roles = role )
         user.save()
         return user
     
@@ -24,7 +26,7 @@ class LoginSerializer(serializers.ModelSerializer):
     ProfileImage = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
     phone_number = serializers.CharField(required=True)
     class Meta:
-        model = CustomUser
+        model = User
         fields = ("phone_number" , 'first_name' , 'last_name' , 'ProfileImage')
     # first_name = serializers.CharField(required=True)
     # last_name = serializers.CharField(required=True)
@@ -34,7 +36,23 @@ class LoginSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.ModelSerializer):
     ProfileImage = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
     class Meta:
-        model = CustomUser
+        model = User
         fields = ('ProfileImage',)
         read_only_fields = ('id' , 'phone_number' , 'first_name' , 'last_name',)  
+        
+        
+class ValidatePhoneSerializer(serializers.ModelSerializer):
+   
+    class Meta:
+        model = PhoneOTP
+        fields = ('phone_number',)
+        
+        
+class ValidateOtpSerializer(serializers.ModelSerializer):
+   
+    class Meta:
+        model = PhoneOTP
+        fields = ('phone_number', 'otp')
+       
+       
       

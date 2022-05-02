@@ -17,11 +17,29 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Scene Reporting System",
+        default_version='v1',
+        description="Test description",
+        terms_of_service="https://www.ourapp.com/policies/terms/",
+        contact=openapi.Contact(email="contact@Scenes.local"),
+        license=openapi.License(name="Test License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+    authentication_classes = []
+)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,7 +48,14 @@ urlpatterns = [
     path('v1/', include('announcment.urls')),
     # path('v1/announcement/' , include('announcment.urls')),
     
-    path('v1/normaluser/',include('users.urls')),
+    path('v1/customUser/',include('users.urls')),
+    path('', schema_view.with_ui('swagger',
+                                 cache_timeout=0), name='schema-swagger-ui'),
+
+    path('api/api.json/', schema_view.without_ui(cache_timeout=0),
+         name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc',
+                                       cache_timeout=0), name='schema-redoc'),
     
 ]
 

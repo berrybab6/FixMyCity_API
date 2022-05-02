@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Announcement
 from accounts.serializers import SectorSerializer , SectorAdminSerializer
-from accounts.models import Sector , SectorAdmin
+from accounts.models import Sector , User
 
 
 
@@ -23,10 +23,10 @@ class AnnouncementSerializer(serializers.ModelSerializer):
             sector = None
         
         try:
-            sectoradmin = SectorAdmin.objects.get(pk=data['sectoradmin'])
+            sectoradmin = User.objects.get(pk=data['sectoradmin'])
             data['sectoradmin'] = SectorAdminSerializer(sectoradmin).data
             
-        except SectorAdmin.DoesNotExist:
+        except User.DoesNotExist:
             sectoradmin = None
         
         return data

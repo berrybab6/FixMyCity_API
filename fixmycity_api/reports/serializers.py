@@ -1,17 +1,18 @@
 from rest_framework import serializers
 from .models import Report
-from accounts.models import Sector , CustomUser
+from accounts.models import Sector , User 
 from accounts.serializers import SectorSerializer
 from users.serializers import RegistorUserSerializer
 
 
 class ReportSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
     
     distance = serializers.DecimalField(source="distance.m" , max_digits=100 , decimal_places=2 , required= False , read_only = True)
     like_count = serializers.SerializerMethodField()
     class Meta:
         model = Report
-        fields = ("id" ,"image", "tag", "description",  "postedAt" ,"distance" , "like_count" , "sector", "user", "location" ,'state' , 'spamStatus' )
+        fields = ("id" ,"image", "tag", "description",  "postedAt" ,"distance" , "like_count" , "sector", "user", "location" ,'state' , 'spamStatus' , 'latitude', 'longtiude' )
         read_only_fields = ("id" , "distance")
         # fields = "__all__"
         
@@ -30,10 +31,10 @@ class ReportSerializer(serializers.ModelSerializer):
             sector = None
         
         try:
-            user = CustomUser.objects.get(pk=data['user'])
+            user = User.objects.get(pk=data['user'])
             data['user'] = RegistorUserSerializer(user).data
             
-        except CustomUser.DoesNotExist:
+        except User.DoesNotExist:
             user = None
         
         return data  
@@ -42,7 +43,7 @@ class ReportSerializer(serializers.ModelSerializer):
 class ReportUpdateSerializer(serializers.ModelSerializer):
    class Meta:
         model = Report
-        fields = ('id' , 'sector' ,'state' , 'spamStatus' )
+        fields = ( 'sector' ,'state' , 'spamStatus' )
         read_only_fields = ("id" ,"image", "tag", "description",  "postedAt" ,"distance" , "like_count" , "sector", "user", "location"  )
         # fields = "__all__"
           
@@ -51,6 +52,12 @@ class LocationSerializer(serializers.ModelSerializer):
         model = Sector
         fields = ("location",)
     
+
+class MyReportUpdateSerializer(serializers.ModelSerializer):
+   class Meta:
+        model = Report
+        fields = ('tag' , 'sector'  , 'description')
+        read_only_fields = ("id" ,"image",  "postedAt" ,"distance" , "like_count" , "user", "location"  )
 
 # class LocationSerializer(serializers.ModelSerializer):
 #     class Meta:

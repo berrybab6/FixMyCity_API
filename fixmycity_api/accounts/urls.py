@@ -8,6 +8,10 @@ from django.conf.urls.static import static
 
 from django.urls import include
 
+from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestView,SectorAPIView , LoginSectorAdminView , VerifyEmail , LoginSectorAdmin , LoginSuperAdmin
+
+
+
 from .views import ActiveSectorCount, BanCustomUserAPIView, CustomUserAPIView, EditProfile, LoginView, MainSectorAPIView, RegisterView, LoginSerializer,SectorAPIView, SectorCount, TestView,  LoginSectorAdminView, UserCount, UserDetailView, UserView
 from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestView, RoleView
 
@@ -29,6 +33,24 @@ router.register('sector',SectorAPIView,basename='sector')
 # router.register('login',LoginView,basename='User')
 
 urlpatterns = [
+
+    path('register/', RegisterView.as_view() ,  name="register"),
+    path('email-verify/', VerifyEmail.as_view(), name='email-verify'),
+    path('',include(router.urls)),
+
+    # path('login/', LoginView.as_view() , name='login'),
+    # path('login_sectoradmin/', LoginSectorAdminView.as_view()),
+    
+    
+    
+    # path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('login_sectoradmin/', LoginSectorAdmin.as_view(), name='login_sector_admin'),
+    path('login_superadmin/', LoginSuperAdmin.as_view(),   name='login_super_admin'),
+    # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # path('user_count/', UserCount.as_view()),
+    # path('sector_count/', SectorCount.as_view()),
+    # path('active_sectors/', ActiveSectorCount.as_view()),
+
     path('register/', RegisterView.as_view()),
 
     path('sector/',include(router.urls)),
@@ -36,9 +58,6 @@ urlpatterns = [
     
 
     path('main_sectors/',MainSectorAPIView.as_view()),
-
-    path('login/', LoginView.as_view()),
-    path('login_sectoradmin/', LoginSectorAdminView.as_view()),
     
     path('api/', include('rest_framework.urls')),
     path('user_count/', UserCount.as_view()),
@@ -49,6 +68,7 @@ urlpatterns = [
     path('custom_users/<int:pk>',BanCustomUserAPIView.as_view()),
     path('users/',UserView.as_view()),
     path('users/<int:pk>',UserDetailView.as_view()),
+
     # path('sector/',SectorView.as_view())
 #     path('test/', TestView.as_view()),
 #     path('edit/<int:id>/',EditProfile.as_view()),

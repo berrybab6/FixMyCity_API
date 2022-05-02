@@ -2,17 +2,19 @@ import  random as rand
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from accounts.models import CustomUser, PhoneOTP
+from accounts.models import User, PhoneOTP
 from rest_framework.views import APIView
-from .serializers import RegistorUserSerializer  , LoginSerializer ,UpdateUserSerializer
+from .serializers import RegistorUserSerializer  , LoginSerializer ,UpdateUserSerializer , ValidatePhoneSerializer , ValidateOtpSerializer
 from rest_framework import permissions, generics, status
 from django.contrib.auth import login
 from accounts.utils import Utils
 from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny
-from twilio.rest import Client
+# from twilio.rest import Client
 from rest_framework.permissions import IsAuthenticated
 from permissions import IsCustomUser
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 def send_otp(phone):
@@ -46,16 +48,20 @@ def send_otp(phone):
     
     
 class ValidatePhoneSendOTP(APIView):
+    
     permission_classes = [AllowAny, ]
+    serializer_class = ValidatePhoneSerializer
     '''
     This class view takes phone number and if it doesn't exists already then it sends otp for
     first coming phone numbers'''
-
+    # phone_param_config = openapi.Parameter('phone_number' , in_=openapi.IN_QUERY , description="Description" , type=openapi.TYPE_STRING)
+    
+    @swagger_auto_schema(request_body=ValidatePhoneSerializer)
     def post(self, request, *args, **kwargs):
         phone_number = request.data.get('phone_number')
         if phone_number:
             phone = str(phone_number)
-            user = CustomUser.objects.filter(phone_number__iexact = phone)
+            user = User.objects.filter(phone_number__iexact = phone)
             if user.exists():
                 otp = send_otp(phone)
                 print(phone, otp)
@@ -148,7 +154,9 @@ class ValidateOTP(APIView):
     If you have received otp, post a request with phone and that otp and you will be redirected to set the password
     
     '''
-
+    serializer_class = ValidateOtpSerializer
+ 
+    @swagger_auto_schema(request_body=ValidateOtpSerializer)
     def post(self, request, *args, **kwargs):
         phone_number = request.data.get('phone_number', False)
         otp_sent   = request.data.get('otp', False)
@@ -191,6 +199,9 @@ class Login(APIView):
     If you have received otp, post a request with phone and that otp and you will be redirected to set the password
     
     '''
+    # serializer_class = LoginSerializer
+ 
+    @swagger_auto_schema(request_body=ValidateOtpSerializer)
 
     def post(self, request, *args, **kwargs):
         phone_number = request.data.get('phone_number', False)
@@ -255,7 +266,9 @@ class Login(APIView):
 class Register(APIView):
     permission_classes = [AllowAny, ]
     '''Takes phone  ,first name and lastname  and creates a new user only if otp was verified and phone is new'''
-
+    serializer_class = RegistorUserSerializer
+ 
+    @swagger_auto_schema(request_body=RegistorUserSerializer)
     def post(self, request, *args, **kwargs):
         phone_number = request.data.get('phone_number', False)
         first_name = request.data.get('first_name', False)
@@ -265,7 +278,7 @@ class Register(APIView):
 
         if phone_number and first_name and last_name:
             phone_number = str(phone_number)
-            user = CustomUser.objects.filter(phone_number__iexact = phone_number)
+            user = User.objects.filter(phone_number__iexact = phone_number)
             if user.exists():
                 return Response({'status': False, 'message': 'Phone Number already have account associated.'})
             else:
@@ -327,18 +340,21 @@ class Register(APIView):
 
 class EditProfile(APIView):
     permission_classes =  [IsAuthenticated, IsCustomUser]
+    serializer_class = UpdateUserSerializer
+ 
+    @swagger_auto_schema(request_body=UpdateUserSerializer)
 
     def patch(self, request, format=None):
         try:
             # exist then update
-            profile = CustomUser.objects.get(id=request.user.id)
+            profile = User.objects.get(id=request.user.id)
             serializer = UpdateUserSerializer(profile, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
             else:
                 return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
-        except CustomUser.DoesNotExist:
+        except User.DoesNotExist:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
     
     

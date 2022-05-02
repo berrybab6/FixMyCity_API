@@ -17,14 +17,15 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-import dj_database_url
+# import dj_database_url
 
 
 import os
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-
+ 
+MODELS = os.path.join(BASE_DIR, 'ml/models')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -49,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
     'django.contrib.gis',
     'corsheaders',
     'cloudinary',
@@ -78,8 +80,9 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK  = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        # 'fixmycity_api.jwt.JwtAuthentication',
        
-         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
@@ -96,13 +99,17 @@ REST_FRAMEWORK  = {
     
     
     }
+AUTHENTICATION_BACKENDS = [
+    # Application custom auth backend
+    'fixmycity_api.auth.AuthentificationBackend',
+]
 
 ROOT_URLCONF = 'fixmycity_api.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': 'accounts/verify_email.html',
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -126,9 +133,9 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'scene',
+        'NAME': 'fixmycity',
         'USER': 'postgres',
-        'PASSWORD': 'new_password',
+        'PASSWORD': 'test123',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
@@ -141,6 +148,7 @@ DATABASES = {
 # }
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3002",
     "https://fixmycity-24.herokuapp.com",
     "https://fixmycity5-24.herokuapp.com",
     "http://localhost:3000",
@@ -153,6 +161,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://e83a-197-156-77-127.ngrok.io"
 ]
 CSRF_TRUSTED_ORIGINS = [
+    "https://2a06-197-156-86-124.ngrok.io",
+    "https://294a-197-156-77-127.ngrok.io",
+    "http://localhost:3002",
     'https://fixmycity-24.herokuapp.com',
     "https://fixmycity5-24.herokuapp.com",
     "http://localhost:3000",
@@ -174,9 +185,9 @@ CORS_ALLOW_METHODS = [
     "PUT",
 ]
 
-DATABASE_URL = os.environ.get('DATABASE_URL')
-db_from_env = dj_database_url.config(default=DATABASE_URL, conn_max_age=500, ssl_require=True)
-DATABASES['default'].update(db_from_env)
+# DATABASE_URL = os.environ.get('DATABASE_URL')
+# db_from_env = dj_database_url.config(default=DATABASE_URL, conn_max_age=500, ssl_require=True)
+# DATABASES['default'].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -227,6 +238,16 @@ cloudinary.config(
     api_secret="1Adci2An4RTqgFakBpoF5vMz63I"
 )
 
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
+
 
 # CLOUDINARY_STORAGE = {
 #     'CLOUD_NAME': config('CLOUD_NAME', default=""),
@@ -271,3 +292,9 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
     'TOKEN_TYPE_CLAIM': 'access'
 }
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'wubshetgenetu21@gmail.com'
+EMAIL_HOST_PASSWORD = 'fslgeuvbslfhakax'
