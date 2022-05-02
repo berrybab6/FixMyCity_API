@@ -106,14 +106,17 @@ class ReportAPIView(viewsets.ModelViewSet):
     def partial_update(self, request, pk=None):
         id = self.kwargs.get("pk")
         try:
-            report = Report.objects.get(id=id)
+            
+            print(self.request.user.sector)
+            #  announcment = Announcement.objects.filter(sectoradmin__sector_user=self.request.user).get(id=id)
+            report = Report.objects.filter(sector__district_name=self.request.user.sector).get(id=id)
             reportserializer = ReportUpdateSerializer(report, data=request.data, partial=True)
             if reportserializer.is_valid():
                 reportserializer.save()
                 return Response(reportserializer.data, status=status.HTTP_200_OK)
             return Response(reportserializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Report.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail" : 'Report doest not exist or you dont have permission to update it'} , status=status.HTTP_404_NOT_FOUND)
         
         
         
@@ -134,7 +137,7 @@ class ReportAPIView(viewsets.ModelViewSet):
         """Set custom permissions for each action."""
         if self.action in [ 'partial_update', 'destroy', 'getreportbasedonSectorName' , 'getreportbasedonSectorNameandLocation']:
             self.permission_classes = [IsAuthenticated, IsSectorAdmin]
-        elif self.action in ['list' ,]:
+        elif self.action in ['list' , 'retrieve']:
             self.permission_classes = [IsAuthenticated  ]
         elif self.action in ['create']:
             self.permission_classes = [IsAuthenticated , IsCustomUser ]
