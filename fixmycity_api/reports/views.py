@@ -1,9 +1,20 @@
 from dis import dis
 from tracemalloc import start
+
 from turtle import distance
 from rest_framework.views import APIView
 from .models import F, Report
 from .serializers import ReportSerializer ,ReportUpdateSerializer, MyReportUpdateSerializer
+
+
+from django.http import JsonResponse
+from accounts.models import Sector, SectorAdmin
+from accounts.serializers import SectorAdminSerializer, SectorSerializer
+
+
+# from .serializers import LocationSerializer, ReportSerializer ,ReportUpdateSerializer
+
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -14,6 +25,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.db.models.functions import Distance
 from .apps import ReportsConfig
 from rest_framework.decorators import action
+
 
 
 
@@ -110,7 +122,9 @@ class ReportAPIView(viewsets.ModelViewSet):
             reportserializer = ReportUpdateSerializer(report, data=request.data, partial=True)
             if reportserializer.is_valid():
                 reportserializer.save()
-                return Response(reportserializer.data, status=status.HTTP_200_OK)
+                serializer = ReportSerializer(report)
+
+                return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(reportserializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Report.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -142,8 +156,53 @@ class ReportAPIView(viewsets.ModelViewSet):
     
     
 
+from geopy.geocoders import Nominatim
+class ReportStatusView(APIView):
+    # permission_classes = (IsAuthenticated, IsCustomUser)
+    queryset = [Sector.objects.all(), SectorAdmin.objects.all(), Report.objects.all()]
+    serializer_classes = [ SectorAdminSerializer, SectorSerializer, ReportSerializer, LocationSerializer]
+    permission_classes = (permissions.AllowAny,)
+    
+    def get(self, request, pk=None):
+        # id = self.kwargs.get("pk")
+        sector_user = SectorAdmin.objects.get(id=pk)
+        if sector_user:
+            # ser = SectorAdminSerializer(sector_user)
+            sector_branch = sector_user.sector
+            sector_type = sector_user.sector.sector_type
+            if sector_type:
+                sectors = Sector.objects.filter(sector_type=sector_type)
+                
+                branches = sectors.count()
+                ser = SectorSerializer(sectors, many=True)
+                active_report_count = Report.objects.filter(state=False,sector=sector_branch).count()
+                resolved_report_count = Report.objects.filter(state=True, sector=sector_branch).count()
+                spam_report_count = Report.objects.filter(spamStatus=True,sector=sector_branch).count()
 
+                sectro = Sector.objects.get(id=7)
+                sec_loc = LocationSerializer(sectro)
+                lela2 = sectro.location.coords[1]
+                lela = round(lela2, 6)
+                # geolocator = Nominatim(user_agent="geoapiExercises")
+              
+                # Latitude = "12.211180"
+                # Longitude = "34.804687"
+  
+                # location = geolocator.reverse(Latitude+","+Longitude)
+                # if location:
+                #     address = location.raw['address']
+                #     city = address.get('city', '')
+                #     state = address.get('state', '')
+                #     country = address.get('country', '')
+                #     return JsonResponse({"loc":sec_loc.data,"country":country, "city":city, "lela":lela})
+                # ser = SectorSerializer(branches, many=True)
+                return JsonResponse({"sectors":ser.data,"count":{"branch_count":[branches,"Branch Number"], "active_report":[active_report_count,"Active Reports"],"resolved_report":[resolved_report_count,"Resolved Reports"], "spam_report":[spam_report_count,"Spam Reports"]}})
+            else:
+                return JsonResponse({"error":"NO Sectors with this account"})
+        else:
+            return JsonResponse({"error":"No Data"})
 
+        
 class LikeReportView(APIView):
     # permission_classes = (IsAuthenticated, IsCustomUser)
     permission_classes = (permissions.AllowAny,)
