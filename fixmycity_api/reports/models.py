@@ -28,7 +28,7 @@ class Report(models.Model):
     tag         = ArrayField(models.CharField(max_length=200), blank=True , null=True)
     description = models.CharField(max_length = 255, null = True)
     postedAt    = models.DateTimeField(auto_now_add=True , null=True)
-    resolvedAt  = models.DateTimeField(auto_now=True ,null=True )
+    updatedAt  = models.DateTimeField(auto_now=True ,null=True )
     noOfLikes   = models.ManyToManyField(User , related_name='report_posts')
     spamStatus  = models.BooleanField(default=False)
     state       = models.BooleanField(default=False) #state is for seen and unseen report

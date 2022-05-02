@@ -2,6 +2,8 @@
 from email import message
 from django.shortcuts import render
 from rest_framework.views import APIView
+
+from accounts.models import Sector , User
 from .models import Announcement
 from .serializers import AnnouncementSerializer
 from rest_framework import status, permissions
@@ -22,15 +24,21 @@ class AnnouncementAPIView(viewsets.ModelViewSet):
     serializer_class = AnnouncementSerializer
     pagination_class = PageNumberPagination
     def get_queryset(self):
-        announcment = Announcement.objects.all().order_by("-date")
+        announcment = Announcement.objects.all().order_by("-createdAt")
         print(announcment)
         return announcment
     
     def create(self, request):
+        sector_id = self.request.user.sector.id
+        sectoradmin_id = self.request.user.id
+        sec = Sector.objects.get(id=sector_id)
+        sectoradmin = User.objects.get(id=sectoradmin_id)
+        
+       
         serializer_obj = AnnouncementSerializer(data=request.data)
         
         if serializer_obj.is_valid():
-            serializer_obj.save()
+            serializer_obj.save(sector = sec , sectoradmin = sectoradmin)
             return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
     
