@@ -12,7 +12,6 @@ from .utils import Utils
 from .models import Role, Sector, User
 
 from .utils import Utils
-from .models import CustomUser, Role, Sector, User,SectorAdmin
 
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
@@ -94,36 +93,72 @@ class RegisterView(APIView):
 
 ########################  DASHBOARD #####################
 
-from .models import CustomUser as u
+from .models import User as u
 # from users.serializers import RegistorUserSerializer as customU
 
 class UserCount(APIView):
     permission_classes = [AllowAny,]
-    queryset = [u.objects.all(), SectorAdmin.objects.all()]
+    queryset = [u.objects.all()]
     # serializer_classes = [SectorAdminSerializer, customU]
     def get(self, request):
-        
-        
-       
-        
-        
+        role_s = Role.objects.get(id=2)
+        role_u = Role.objects.get(id=3)
 
+        sectors = u.objects.filter(roles=role_s).count()
+        users = u.objects.filter(roles=role_u).count()
+        banned = u.objects.filter(roles=role_u,active=False).count()
+              
+        return Response({"sectors":[sectors, "Sectors"], "users":[users, "Custom Users"], "banned":[banned,"Banned Users"]})
+        
+    def get_queryset(self):
+        return super().get_queryset()
+    
+class SectorCount(APIView):
+    permission_classes = [AllowAny,]
+    queryset = [Sector.objects.all()]
+    # serializer_classes = [SectorAdminSerializer, customU]
+    def get(self, request):
         water = Sector.objects.filter(sector_type=2).count()
         tele = Sector.objects.filter(sector_type=1).count()
         elpa = Sector.objects.filter(sector_type=4).count()
         roads = Sector.objects.filter(sector_type=3).count()
 
-
-              
         return Response({"tele":[tele, "Tele"], "water":[water, "Water And Sewage"], "roads":[roads,"Roads"], "elpa":[elpa, "ELPA"]})
       
     def get_queryset(self):
         return super().get_queryset()
 
+    
+class RoleView(generics.GenericAPIView):
+    
+    serializer_class = RoleSerializer
+    queryset = Role.objects.all()
+    permission_classes = [AllowAny, ]
+
+    def post(self,request):
+
+        ad = Role.objects.get_or_create(id=1)
+        ser1 = RoleSerializer(ad)
+
+        sec = Role.objects.get_or_create(id=2)
+        ser2 = RoleSerializer(sec)
+    
+        custom = Role.objects.get_or_create(id=3)
+        ser3 = RoleSerializer(custom)
+        
+        counts = Role.objects.count()
+        if counts>=3:
+            roles = Role.objects.all()
+            ser = RoleSerializer(roles,many=True)
+            return JsonResponse({"Roles":ser.data,"message":"All Roles are already created"})
+        else: 
+            return JsonResponse({"role1":ser1.data,"role2":ser2.data,"role3":ser3.data,"count":counts}) 
+
+
 
 class ActiveSectorCount(APIView):
     permission_classes = [AllowAny,]
-    queryset = [SectorAdmin.objects.all()]
+    queryset = [User.objects.all()]
     serializer_class = [SectorAdminSerializer]
     def percentage(self, part, whole):
         perc = 0
@@ -144,9 +179,9 @@ class ActiveSectorCount(APIView):
             # vals.append(waters)
 
             for water in waters:
-                
-                water_count = SectorAdmin.objects.filter(active = True, sector=water).count()
-                t_sectors = SectorAdmin.objects.filter(sector=water).count()
+                role = Role.objects.get(id=2)
+                water_count = User.objects.filter(roles=role,active = True, sector=water).count()
+                t_sectors = User.objects.filter(roles=role,sector=water).count()
                 valCount.append(water_count)
                 water_perc = self.percentage(water_count, t_sectors)
                 percCount.append(water_perc)
@@ -282,37 +317,41 @@ class CustomUserAPIView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
     # permission_classes = ( IsAuthenticated,IsSuperAdmin,)
     # http_method_names = ['get', 'post', 'patch']
-    serializer_class = CustomUserSerializer
+    serializer_class = UserSerializer
 
     pagination_class = PageNumberPagination
     # queryset = Sector.objects.all().order_by("-created_at")
-    queryset = CustomUser.objects.all()
+    queryset = User.objects.all()
 
     def get_queryset(self):
-        user = CustomUser.objects.all()
+        role = Role.objects.get(id=3)
+        user = User.objects.filter(roles=role)
         return user
     def get(self, request):
-        users = CustomUser.objects.filter(active = True)
+        role = Role.objects.get(id=3)
+        users = User.objects.filter(roles=role,active = True)
         if users:
-            ser = CustomUserSerializer(users, many=True)
+            ser = User(users, many=True)
             return JsonResponse({"users":ser.data})
         else :
             return JsonResponse({"users":[]})
 
 class BanCustomUserAPIView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny,)
-    serializer_class = CustomUserSerializer
+    serializer_class = User
 
     pagination_class = PageNumberPagination
-    queryset = CustomUser.objects.all()
+    queryset = User.objects.all()
     
     def get_queryset(self):
-        user = CustomUser.objects.all()
+        role = Role.objects.get(id=3)
+        user = User.objects.filter(roles=role)
         return user
     
     def put(self, request, pk=None):
         try:
-            user = CustomUser.objects.get(id=pk)
+            role = Role.objects.get(id=3)
+            user = User.objects.get(id=pk,roles=role)
             if user:
                 user.active = False
                 user.save()
