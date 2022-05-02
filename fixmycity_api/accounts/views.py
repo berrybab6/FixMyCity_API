@@ -336,29 +336,29 @@ class CustomUserAPIView(generics.GenericAPIView):
         else :
             return JsonResponse({"users":[]})
 
-class BanCustomUserAPIView(generics.GenericAPIView):
-    permission_classes = (permissions.AllowAny,)
-    serializer_class = User
+# class BanCustomUserAPIView(generics.GenericAPIView):
+#     permission_classes = (permissions.AllowAny,)
+#     serializer_class = User
 
-    pagination_class = PageNumberPagination
-    queryset = User.objects.all()
+#     pagination_class = PageNumberPagination
+#     queryset = User.objects.all()
     
-    def get_queryset(self):
-        role = Role.objects.get(id=3)
-        user = User.objects.filter(roles=role)
-        return user
+#     def get_queryset(self):
+#         role = Role.objects.get(id=3)
+#         user = User.objects.filter(roles=role)
+#         return user
     
-    def put(self, request, pk=None):
-        try:
-            role = Role.objects.get(id=3)
-            user = User.objects.get(id=pk,roles=role)
-            if user:
-                user.active = False
-                user.save()
-                return Response({"message":"User is Banned"}, status=status.HTTP_200_OK)
-            return Response({"errors":"an error occured"}, status=status.HTTP_400_BAD_REQUEST)
-        except Sector.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+#     def put(self, request, pk=None):
+#         try:
+#             role = Role.objects.get(id=3)
+#             user = User.objects.get(id=pk,roles=role)
+#             if user:
+#                 user.active = False
+#                 user.save()
+#                 return Response({"message":"User is Banned"}, status=status.HTTP_200_OK)
+#             return Response({"errors":"an error occured"}, status=status.HTTP_400_BAD_REQUEST)
+#         except Sector.DoesNotExist:
+#             return Response(status=status.HTTP_404_NOT_FOUND)
 class SectorAPIView(viewsets.ModelViewSet):
     permission_classes = (permissions.AllowAny,)
     # permission_classes = ( IsAuthenticated,IsSuperAdmin,)

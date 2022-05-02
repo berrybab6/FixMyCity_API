@@ -50,7 +50,7 @@ class Role(models.Model):
 class CustomUserManager(BaseUserManager):
     """Define a model manager for User model with no username field."""
 
-    def _create_user(self, username,password=None,full_name=None,role=None, **extra_fields):
+    def _create_user(self, username,password=None,role=None, **extra_fields):
         """Create and save a User with the given username and password."""
         if not username:
             raise ValueError('The given username must be set')
@@ -60,7 +60,7 @@ class CustomUserManager(BaseUserManager):
         
         user = self.model(username=username, **extra_fields)
         user.set_password(password)
-        user.full_name=full_name
+        # user.full_name=full_name
         ro = Role.objects.get(id=role)
         
         user.roles = ro
@@ -68,14 +68,14 @@ class CustomUserManager(BaseUserManager):
         # user.roles.set(ro)
         return user
 
-    def create_user(self,username, password=None, full_name=None,**extra_fields):
+    def create_user(self,username, password=None,**extra_fields):
         # extra_fields.setdefault('roles',3)
         # if extra_fields.get('roles') != 3:
             # raise ValueError('User must have role=3.')
 
-        return self._create_user(username, password,full_name,role=3, **extra_fields)
+        return self._create_user(username, password,role=3, **extra_fields)
 
-    def create_sectoradmin(self, username, password=None, full_name=None,**extra_fields):
+    def create_sectoradmin(self, username, password=None,**extra_fields):
         """Create and save a SuperUser with the given username and password."""
         extra_fields.setdefault('main_sector', True)
         # extra_fields.setdefault('roles', 2)
@@ -85,9 +85,9 @@ class CustomUserManager(BaseUserManager):
         # if extra_fields.get('roles') != 2:
             # raise ValueError('Sector Admin must have role=2.')
 
-        return self._create_user(username, password,full_name, role=2,**extra_fields)
+        return self._create_user(username, password, role=2,**extra_fields)
 
-    def create_superuser(self, username, password=None, full_name=None,**extra_fields):
+    def create_superuser(self, username, password=None,**extra_fields):
         """Create and save a SuperUser with the given username and password."""
         extra_fields.setdefault('staff', True)
         extra_fields.setdefault('active',True)
@@ -95,7 +95,7 @@ class CustomUserManager(BaseUserManager):
         # if extra_fields.get('roles') != 1:
             # raise ValueError('Super Admin must have role=1.')
         # ro = Role.objects.get(id=1) 
-        return self._create_user(username, password,full_name,role=1,**extra_fields)
+        return self._create_user(username, password,role=1,**extra_fields)
 
 
 def upload_to(instance, filename):
@@ -155,7 +155,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     objects = CustomUserManager()
     def name(self):
-        return str(self.full_name)
+        return str(self.first_name)
     def rolem(self):
         return self.roles
     # class Meta:
@@ -251,8 +251,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 #     def __str__(self):
 #         return self.phone_number
     
-    def get_full_name(self):
-        return str(self.first_name) + ":"+ str(self.last_name)
+    # def get_full_name(self):
+    #     return str(self.first_name) + ":"+ str(self.last_name)
     
     
 class PhoneOTP(models.Model):

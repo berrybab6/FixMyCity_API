@@ -7,7 +7,7 @@ class RegistorUserSerializer(serializers.ModelSerializer):
     class Meta:
 
         model = User
-        fields = ('first_name', 'last_name','phone_number' , 'ProfileImage','full_name')
+        fields = ('first_name', 'last_name','phone_number' , 'ProfileImage')
 
         read_only_fields = ['id']
         

@@ -12,7 +12,7 @@ from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestVi
 
 
 
-from .views import ActiveSectorCount, BanCustomUserAPIView, CustomUserAPIView, EditProfile, LoginView, MainSectorAPIView, RegisterView, LoginSerializer,SectorAPIView, SectorCount, TestView,  LoginSectorAdminView, UserCount, UserDetailView, UserView
+from .views import ActiveSectorCount, CustomUserAPIView, EditProfile, LoginView, MainSectorAPIView, RegisterView, LoginSerializer,SectorAPIView, SectorCount, TestView,  LoginSectorAdminView, UserCount, UserDetailView, UserView
 from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestView, RoleView
 
 
@@ -65,7 +65,7 @@ urlpatterns = [
     path('active_sectors/', ActiveSectorCount.as_view()),
 
     path('custom_users/',CustomUserAPIView.as_view()),
-    path('custom_users/<int:pk>',BanCustomUserAPIView.as_view()),
+    # path('custom_users/<int:pk>',BanCustomUserAPIView.as_view()),
     path('users/',UserView.as_view()),
     path('users/<int:pk>',UserDetailView.as_view()),
 
