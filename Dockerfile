@@ -15,7 +15,7 @@ COPY ./requirements.txt .
 
 RUN apk add --update --no-cache postgresql-client python3-dev \
  libffi-dev jpeg-dev freetype-dev libjpeg-turbo-dev libpng-dev \
- curl jq 
+ curl jq gdal
 
 RUN apk add --update --no-cache --virtual .tmp-build-deps \
  gcc g++ libc-dev linux-headers postgresql-dev musl-dev zlib \
