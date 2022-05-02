@@ -1,10 +1,9 @@
-# from django.contrib import admin
+
 from django import views
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-# # from django.views.decorators.csrf import csrf_exempt
-# # from graphene_file_upload.django import FileUploadGraphQLView
+
 
 from django.urls import include
 
@@ -21,36 +20,17 @@ app_name = 'accounts'
 router = routers.DefaultRouter()
 
 router.register('sector',SectorAPIView,basename='sector')
-# router.register('users',CustomUserAPIView,basename='users')
 
-# MainSectorAPIView
 
-# router.register('main_sectors',MainSectorAPIView,basename='main sector')
-
-# router.register('',SectorView,basename='Sector')
-# router.register('role',SectorView,basename='Role')
-
-# router.register('login',LoginView,basename='User')
 
 urlpatterns = [
 
     path('register/', RegisterView.as_view() ,  name="register"),
     path('email-verify/', VerifyEmail.as_view(), name='email-verify'),
-    path('',include(router.urls)),
-
-    # path('login/', LoginView.as_view() , name='login'),
-    # path('login_sectoradmin/', LoginSectorAdminView.as_view()),
     
-    
-    
-    # path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('login_sectoradmin/', LoginSectorAdmin.as_view(), name='login_sector_admin'),
     path('login_superadmin/', LoginSuperAdmin.as_view(),   name='login_super_admin'),
-    # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    # path('user_count/', UserCount.as_view()),
-    # path('sector_count/', SectorCount.as_view()),
-    # path('active_sectors/', ActiveSectorCount.as_view()),
-
+   
     path('register/', RegisterView.as_view()),
 
     path('sector/',include(router.urls)),

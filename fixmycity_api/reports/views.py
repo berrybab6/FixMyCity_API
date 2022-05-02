@@ -33,7 +33,7 @@ class ReportAPIView(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,)
     # authentication_classes = []
     # permission_classes = (IsAuthenticated,IsSectorAdmin )
-    http_method_names = ['get', 'post', 'patch']
+    http_method_names = ['get', 'post', 'patch' , 'delete' ]
     serializer_class = ReportSerializer
     pagination_class = PageNumberPagination
     queryset = Report.objects.all().order_by("-postedAt")
@@ -137,13 +137,17 @@ class ReportAPIView(viewsets.ModelViewSet):
         
     
     def destroy(self, request, pk=None):
+        print("i am here actually")
+        
         id = self.kwargs.get("pk")
         try:
-            report = Report.objects.get(pk=id)
+            report = Report.objects.filter(sector__district_name=self.request.user.sector).get(id=id)
+            print(report)
+            # report = Report.objects.get(pk=id)
             report.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response( {"detail" : "report deleted succesfully!"} , status=status.HTTP_204_NO_CONTENT)
         except Report.DoesNotExist:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Report doest not exist or you dont have permission to delete it"} , status=status.HTTP_404_NOT_FOUND)
         
         
         

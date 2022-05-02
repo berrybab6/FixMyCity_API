@@ -13,6 +13,14 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         fields = "__all__"
         # depth = 1
         
+        
+    def create(self, validated_data):
+        # sector = 
+        # sectoradmin = 
+        announce = Announcement(title= validated_data['title'],description = validated_data['description'] , image = validated_data['image'] )
+        announce.save()
+        return announce
+        
     
     def to_representation(self, instance):
         data = super().to_representation(instance)
