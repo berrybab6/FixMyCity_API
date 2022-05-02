@@ -4,11 +4,11 @@ from tracemalloc import start
 from turtle import distance
 from rest_framework.views import APIView
 from .models import F, Report
-from .serializers import ReportSerializer ,ReportUpdateSerializer, MyReportUpdateSerializer
+from .serializers import LocationSerializer, ReportSerializer ,ReportUpdateSerializer, MyReportUpdateSerializer
 
 
 from django.http import JsonResponse
-from accounts.models import Sector, SectorAdmin
+from accounts.models import Role, Sector, User
 from accounts.serializers import SectorAdminSerializer, SectorSerializer
 
 
@@ -159,13 +159,15 @@ class ReportAPIView(viewsets.ModelViewSet):
 from geopy.geocoders import Nominatim
 class ReportStatusView(APIView):
     # permission_classes = (IsAuthenticated, IsCustomUser)
-    queryset = [Sector.objects.all(), SectorAdmin.objects.all(), Report.objects.all()]
+    queryset = [Sector.objects.all(), User.objects.all(), Report.objects.all()]
     serializer_classes = [ SectorAdminSerializer, SectorSerializer, ReportSerializer, LocationSerializer]
     permission_classes = (permissions.AllowAny,)
     
     def get(self, request, pk=None):
         # id = self.kwargs.get("pk")
-        sector_user = SectorAdmin.objects.get(id=pk)
+        
+        role = Role.objects.get(id=2)
+        sector_user = User.objects.get(id=pk,roles=role)
         if sector_user:
             # ser = SectorAdminSerializer(sector_user)
             sector_branch = sector_user.sector
