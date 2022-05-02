@@ -101,8 +101,19 @@ class CustomUserManager(BaseUserManager):
 def upload_to(instance, filename):
     return '{datetime}{filename}'.format(datetime=datetime.now(), filename=filename)
 
+    
+
+
 
 class Sector(models.Model):
+
+    TELE = 1
+    WATER_AND_SEWAGE = 2
+    ROADS_AUTHORITY = 3
+    ELPA = 4
+    SECTOR_TYPE = ((TELE,'tele'), (WATER_AND_SEWAGE, 'water_and_sewage'), (ROADS_AUTHORITY, 'roads_authority'), (ELPA, 'elpa'))       
+    sector_type = models.PositiveSmallIntegerField(
+        choices=SECTOR_TYPE, null=True)
     district_name = models.CharField(unique=True,max_length=150)
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
     phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True) # validators should be a list
@@ -110,11 +121,13 @@ class Sector(models.Model):
     email = models.EmailField(max_length=150, unique=True)
     location = models.PointField(null=True, blank=True,)
     address = models.CharField(max_length=255 , null=True)
-    
+    main_sector = models.BooleanField(default=False)
+    sector_logo = models.ImageField(upload_to="logo", blank=True, null = True)
     def __str__(self):
         return self.district_name
+
     
-    
+
 class User(AbstractBaseUser, PermissionsMixin):
     roles = models.ForeignKey(Role, on_delete=models.CASCADE,db_column='rolesId', null=True)
     id = models.AutoField(primary_key=True)
@@ -204,21 +217,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 # Create your models here.
 
 
-# class Sector(models.Model):
-#     district_name = models.CharField(unique=True,max_length=150)
-#     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
-#     phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True) # validators should be a list
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     email = models.EmailField(max_length=150, unique=True)
-#     location = models.PointField(null=True, blank=True,)
-#     address = models.CharField(max_length=255 , null=True)
-    
-#     def __str__(self):
-#         return self.district_name
-    
-    
-    
-    
     
     
     
@@ -253,6 +251,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 #     def __str__(self):
 #         return self.phone_number
     
+    def get_full_name(self):
+        return str(self.first_name) + ":"+ str(self.last_name)
     
     
 class PhoneOTP(models.Model):

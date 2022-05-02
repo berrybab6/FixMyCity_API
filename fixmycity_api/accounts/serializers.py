@@ -4,6 +4,7 @@ from django.forms import CharField, ValidationError
 from numpy import full
 from requests import Response
 from rest_framework import serializers, fields
+
 from .models import Sector, User , Role
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.serializers import PasswordField
@@ -16,6 +17,7 @@ from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from rest_framework import status
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.tokens import RefreshToken
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -96,7 +98,12 @@ class LoginSectorAdminSerializer(serializers.Serializer):
 
     # def create(self, validated_data):
         # return User.objects.create(**validated_data)
-
+# class CustomUserSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = CustomUser
+#         fields = "__all__"
+#         # extra_kwargs = {'password': {'write_only': True}}
+#         read_only_fields = ['id']  
 class SectorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sector

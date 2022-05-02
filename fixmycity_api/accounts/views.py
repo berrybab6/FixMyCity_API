@@ -1,3 +1,4 @@
+from numpy import percentile
 from rest_framework import generics, status, permissions, serializers, viewsets
 # from rest_framework import serializers
 from rest_framework.views import APIView
@@ -5,9 +6,13 @@ from django.shortcuts import get_object_or_404
 from django.contrib.gis.geos import GEOSGeometry
 from rest_framework.response import Response
 from django.http import JsonResponse
-from .serializers import  InactiveUser, InvalidUser, LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer , EmailVerificationSerializer, LoginSectorAdminSerializer , LoginSuperAdminSerializer
+
+from .serializers import  InactiveUser, InvalidUser,RoleSerializer, LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer , EmailVerificationSerializer, LoginSectorAdminSerializer , LoginSuperAdminSerializer
 from .utils import Utils
 from .models import Role, Sector, User
+
+from .utils import Utils
+
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 from permissions import IsSectorAdmin, IsSuperAdmin
@@ -32,6 +37,31 @@ from django.contrib.auth.hashers import make_password
 class CustomRedirect(HttpResponsePermanentRedirect):
     allowed_schemes = [os.environ.get('APP_SCHEME'), 'http', 'https']
 
+
+class VerifyEmail(APIView):
+    permission_classes = [AllowAny, ]
+    serializer_class = EmailVerificationSerializer
+    @swagger_auto_schema(request_body=EmailVerificationSerializer)
+    def post(self, request):
+        token = request.data['token']
+        print(token)
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY , algorithms='HS256')
+            print(payload)
+            user = User.objects.get(id=payload['user_id'])
+            print(user)
+            if not user.is_verified:
+                user.is_verified = True
+                user.password = make_password(request.data['password'])
+                user.username = request.data['username']
+                user.first_name = request.data['first_name']
+                user.last_name = request.data['first_name']
+                user.save()
+            return Response({'status': 'success'}, status=status.HTTP_200_OK)
+        except jwt.ExpiredSignatureError as identifier:
+            return Response({'status': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
+        except jwt.exceptions.DecodeError as identifier:
+            return Response({'status': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -60,36 +90,110 @@ class RegisterView(APIView):
 
         # Utils.send_email(data)
         return Response(data=user_data,  status=status.HTTP_201_CREATED)
+
+########################  DASHBOARD #####################
+
+from .models import User as u
+# from users.serializers import RegistorUserSerializer as customU
+
+class UserCount(APIView):
+    permission_classes = [AllowAny,]
+    queryset = [u.objects.all()]
+    # serializer_classes = [SectorAdminSerializer, customU]
+    def get(self, request):
+        role_s = Role.objects.get(id=2)
+        role_u = Role.objects.get(id=3)
+
+        sectors = u.objects.filter(roles=role_s).count()
+        users = u.objects.filter(roles=role_u).count()
+        banned = u.objects.filter(roles=role_u,active=False).count()
+              
+        return Response({"sectors":[sectors, "Sectors"], "users":[users, "Custom Users"], "banned":[banned,"Banned Users"]})
         
-       
-        
-        
+    def get_queryset(self):
+        return super().get_queryset()
+    
+class SectorCount(APIView):
+    permission_classes = [AllowAny,]
+    queryset = [Sector.objects.all()]
+    # serializer_classes = [SectorAdminSerializer, customU]
+    def get(self, request):
+        water = Sector.objects.filter(sector_type=2).count()
+        tele = Sector.objects.filter(sector_type=1).count()
+        elpa = Sector.objects.filter(sector_type=4).count()
+        roads = Sector.objects.filter(sector_type=3).count()
+
+        return Response({"tele":[tele, "Tele"], "water":[water, "Water And Sewage"], "roads":[roads,"Roads"], "elpa":[elpa, "ELPA"]})
+      
+    def get_queryset(self):
+        return super().get_queryset()
 
     
-class VerifyEmail(APIView):
+class RoleView(generics.GenericAPIView):
+    
+    serializer_class = RoleSerializer
+    queryset = Role.objects.all()
     permission_classes = [AllowAny, ]
-    serializer_class = EmailVerificationSerializer
-    @swagger_auto_schema(request_body=EmailVerificationSerializer)
-    def post(self, request):
-        token = request.data['token']
-        print(token)
-        try:
-            payload = jwt.decode(token, settings.SECRET_KEY , algorithms='HS256')
-            print(payload)
-            user = User.objects.get(id=payload['user_id'])
-            print(user)
-            if not user.is_verified:
-                user.is_verified = True
-                user.password = make_password(request.data['password'])
-                user.username = request.data['username']
-                user.first_name = request.data['first_name']
-                user.last_name = request.data['first_name']
-                user.save()
-            return Response({'status': 'success'}, status=status.HTTP_200_OK)
-        except jwt.ExpiredSignatureError as identifier:
-            return Response({'status': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
-        except jwt.exceptions.DecodeError as identifier:
-            return Response({'status': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self,request):
+
+        ad = Role.objects.get_or_create(id=1)
+        ser1 = RoleSerializer(ad)
+
+        sec = Role.objects.get_or_create(id=2)
+        ser2 = RoleSerializer(sec)
+    
+        custom = Role.objects.get_or_create(id=3)
+        ser3 = RoleSerializer(custom)
+        
+        counts = Role.objects.count()
+        if counts>=3:
+            roles = Role.objects.all()
+            ser = RoleSerializer(roles,many=True)
+            return JsonResponse({"Roles":ser.data,"message":"All Roles are already created"})
+        else: 
+            return JsonResponse({"role1":ser1.data,"role2":ser2.data,"role3":ser3.data,"count":counts}) 
+
+
+
+class ActiveSectorCount(APIView):
+    permission_classes = [AllowAny,]
+    queryset = [User.objects.all()]
+    serializer_class = [SectorAdminSerializer]
+    def percentage(self, part, whole):
+        perc = 0
+        if(whole > 0):
+            perc = 100 * float(part)/float(whole)
+        return int(perc)
+    def get(self, request):
+         
+        valCount = []
+        percCount = []
+        
+        names = ["Telecommunication", "Water And Sewage", "Roads Authority", "ELPA"]
+        val3 = []
+        ########## Count Active Water Sector Admins
+        for i in range(0, 4):
+            waters = Sector.objects.filter(sector_type = i+1)
+
+            # vals.append(waters)
+
+            for water in waters:
+                role = Role.objects.get(id=2)
+                water_count = User.objects.filter(roles=role,active = True, sector=water).count()
+                t_sectors = User.objects.filter(roles=role,sector=water).count()
+                valCount.append(water_count)
+                water_perc = self.percentage(water_count, t_sectors)
+                percCount.append(water_perc)
+            val3.append([valCount[i], percCount[i],names[i]])
+        return Response(val3)
+        # return Response({"waterSectors":[water_count, water_perc], "teleCount":tele_count, "roadCount":road_count, "elpaCount":[elpa_count, elpa_perc]})
+      
+    def get_queryset(self):
+        return super().get_queryset()
+########################  DASHBOARD #####################
+
+
 
     
     
@@ -168,8 +272,93 @@ class LoginSectorAdminView(APIView):
     def get_queryset(self):
         return super().get_queryset()
     
+   
+class MainSectorAPIView(APIView):
+    permission_classes = [AllowAny, ]
+    queryset = Sector.objects.filter(main_sector = True)
+    serializer_class = SectorSerializer
+   
     
+    def get_queryset(self):
+        return super().get_queryset()
+    def get(self, request):
+        s = Sector.objects.filter(main_sector = True)
+        if s:
+            ser = SectorSerializer(s, many=True)
+            return JsonResponse({"sectors":ser.data})
+        else:
+            return JsonResponse({"error":"No data"})
+
+
+class UserView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    def get(self, request):
+        users = User.objects.all()
+        if users:
+            ser = UserSerializer(users, many=True)
+            return JsonResponse({"user":ser.data})
+        else:
+            JsonResponse({"error":"NO User Found","user":[]})
+class UserDetailView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    def get(self, request, pk=None):
+        user = User.objects.get(id = pk)
+        if user:
+            ser = UserSerializer(user)
+            return JsonResponse({"user":ser.data})
+        else:
+            JsonResponse({"error":"NO User Found"})
+
+class CustomUserAPIView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    # permission_classes = ( IsAuthenticated,IsSuperAdmin,)
+    # http_method_names = ['get', 'post', 'patch']
+    serializer_class = UserSerializer
+
+    pagination_class = PageNumberPagination
+    # queryset = Sector.objects.all().order_by("-created_at")
+    queryset = User.objects.all()
+
+    def get_queryset(self):
+        role = Role.objects.get(id=3)
+        user = User.objects.filter(roles=role)
+        return user
+    def get(self, request):
+        role = Role.objects.get(id=3)
+        users = User.objects.filter(roles=role,active = True)
+        if users:
+            ser = User(users, many=True)
+            return JsonResponse({"users":ser.data})
+        else :
+            return JsonResponse({"users":[]})
+
+class BanCustomUserAPIView(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = User
+
+    pagination_class = PageNumberPagination
+    queryset = User.objects.all()
     
+    def get_queryset(self):
+        role = Role.objects.get(id=3)
+        user = User.objects.filter(roles=role)
+        return user
+    
+    def put(self, request, pk=None):
+        try:
+            role = Role.objects.get(id=3)
+            user = User.objects.get(id=pk,roles=role)
+            if user:
+                user.active = False
+                user.save()
+                return Response({"message":"User is Banned"}, status=status.HTTP_200_OK)
+            return Response({"errors":"an error occured"}, status=status.HTTP_400_BAD_REQUEST)
+        except Sector.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 class SectorAPIView(viewsets.ModelViewSet):
     permission_classes = (permissions.AllowAny,)
     # permission_classes = ( IsAuthenticated,IsSuperAdmin,)
@@ -177,9 +366,11 @@ class SectorAPIView(viewsets.ModelViewSet):
     serializer_class = SectorSerializer
 
     pagination_class = PageNumberPagination
-    queryset = Sector.objects.all().order_by("-created_at")
+    # queryset = Sector.objects.all().order_by("-created_at")
+    queryset = Sector.objects.all().order_by("-sector_type")
+
     def get_queryset(self):
-        sector = Sector.objects.all().order_by("-created_at")
+        sector = Sector.objects.all().order_by("-sector_type")
         return sector
     
     def create(self, request, **kwargs):
