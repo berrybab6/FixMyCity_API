@@ -22,15 +22,15 @@ RUN apk add --update --no-cache  postgresql-client python3-dev \
 
 RUN apk add --update --no-cache --virtual .tmp-build-deps \
  gcc g++ libc-dev linux-headers postgresql-dev musl-dev zlib \
- zlib-dev python-gdal python3-gdal
+ zlib-dev
 # RUN apk add --update libgdal-dev
+RUN sudo apt install gdal-bin python-gdal python3-gdal
 
 # RUN pip install cloudinary django-cloudinary-storage
 RUN pip install -r requirements.txt
 # RUN pip install gunicorn
 # RUN pip install whitenoise
 RUN apk del .tmp-build-deps
-
 # RUN pip install -r requirements.txt
 
 # copy project
