@@ -22,7 +22,7 @@ RUN apk add --update --no-cache --virtual .tmp-build-deps \
  zlib-dev
 # RUN apk add --update libgdal-dev
 
-RUN apk add --update && apk install --yes libgdal-dev
+RUN apk add --update && apk add install --yes libgdal-dev
 # RUN pip install cloudinary django-cloudinary-storage
 RUN pip install -r requirements.txt
 # RUN pip install gunicorn
