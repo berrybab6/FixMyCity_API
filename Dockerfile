@@ -14,13 +14,13 @@ RUN pip install --upgrade pip
 COPY ./requirements.txt .
 
 RUN apk add --update --no-cache postgresql-client python3-dev \
- libffi-dev jpeg-dev freetype-dev libjpeg-turbo-dev libpng-dev \
+ libffi-dev jpeg-dev libgdal-dev freetype-dev libjpeg-turbo-dev libpng-dev \
  curl jq
 
 RUN apk add --update --no-cache --virtual .tmp-build-deps \
  gcc g++ libc-dev linux-headers postgresql-dev musl-dev zlib \
  zlib-dev
-RUN apt-get update && apt-get install --yes libgdal-dev
+# RUN apk add update && apk install --yes libgdal-dev
 # RUN pip install cloudinary django-cloudinary-storage
 RUN pip install -r requirements.txt
 # RUN pip install gunicorn
