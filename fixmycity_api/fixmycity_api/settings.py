@@ -160,7 +160,8 @@ CORS_ALLOWED_ORIGINS = [
     'http://a544-197-156-111-254.ngrok.io',
     'https://0644-197-156-111-254.ngrok.io',
     'http://0413-197-156-111-254.ngrok.io',
-    "http://e83a-197-156-77-127.ngrok.io"
+    "http://e83a-197-156-77-127.ngrok.io",
+    "https://3b9a-197-156-95-59.ngrok.io"
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://2a06-197-156-86-124.ngrok.io",
@@ -171,6 +172,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://192.168.8.106:3000",
     "http://e83a-197-156-77-127.ngrok.io",
+    "https://3b9a-197-156-95-59.ngrok.io",
     # 'https://7677-197-156-86-169.ngrok.io',
     # 'https://ef71-197-156-86-181.ngrok.io',
     # 'http://a544-197-156-111-254.ngrok.io',
