@@ -24,7 +24,7 @@ RUN apk add --update --no-cache --virtual .tmp-build-deps \
  gcc g++ libc-dev linux-headers postgresql-dev musl-dev zlib \
  zlib-dev
 # RUN apk add --update libgdal-dev
-RUN sudo apt install gdal-bin python-gdal python3-gdal
+RUN apt install gdal-bin python-gdal python3-gdal
 
 # RUN pip install cloudinary django-cloudinary-storage
 RUN pip install -r requirements.txt
