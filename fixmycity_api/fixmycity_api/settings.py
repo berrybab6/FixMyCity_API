@@ -57,12 +57,13 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'rest_framework',
     'rest_framework_simplejwt',
-    'django_filters',
+    # 'django_filters',
     # 'accounts.apps.AccountsConfig',
     'accounts',
     'users',
     'reports',
-    'announcment'
+    'announcment',
+    'django_filters',
     
 ]
 
@@ -91,7 +92,8 @@ REST_FRAMEWORK  = {
         #  'rest_framework.permissions.IsAuthenticated', # make all endpoints private
     ),
      'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-     'PAGE_SIZE': 10
+     'PAGE_SIZE': 10, 
+     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
         
         
         
