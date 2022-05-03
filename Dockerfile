@@ -13,7 +13,8 @@ ENV DEBUG 1
 RUN pip install --upgrade pip
 COPY ./requirements.txt .
 
-RUN apk add libgdal-dev
+# RUN apk add libgdal-dev
+RUN apt-get update && apt-get install --yes libgdal-dev
 
 RUN apk add --update --no-cache postgresql-client python3-dev \
  libffi-dev jpeg-dev freetype-dev libjpeg-turbo-dev libpng-dev \
