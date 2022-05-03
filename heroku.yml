@@ -3,8 +3,6 @@ setup:
 
 
 build:
-  packages:
-    - gdal-bin
   docker:
     web: Dockerfile
 run:
