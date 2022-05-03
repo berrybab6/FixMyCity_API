@@ -11,6 +11,8 @@ class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Announcement
         fields = "__all__"
+        read_only_fields = ("id" , "sector" , "sectoradmin")
+        
         
         # depth = 1
         
