@@ -21,6 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 import os
+import dj_database_url
+
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
