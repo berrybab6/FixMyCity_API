@@ -22,7 +22,7 @@ RUN apk add --update --no-cache  postgresql-client python3-dev \
 
 RUN apk add --update --no-cache --virtual .tmp-build-deps \
  gcc g++ libc-dev linux-headers postgresql-dev musl-dev zlib \
- zlib-dev
+ zlib-dev gdal-bin python-gdal python3-gdal
 # RUN apk add --update libgdal-dev
 
 # RUN pip install cloudinary django-cloudinary-storage
