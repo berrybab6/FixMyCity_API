@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'reports',
     'announcment',
     'django_filters',
+    # 'django_rest_passwordreset',
     
 ]
 
@@ -290,7 +291,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=2),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
     'TOKEN_TYPE_CLAIM': 'access'
 }
@@ -300,3 +301,5 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'wubshetgenetu21@gmail.com'
 EMAIL_HOST_PASSWORD = 'fslgeuvbslfhakax'
+
+

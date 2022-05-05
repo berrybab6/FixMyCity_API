@@ -42,11 +42,13 @@ schema_view = get_schema_view(
 
 
 urlpatterns = [
+   
     path('admin/', admin.site.urls),
     path('v1/admins/',include('accounts.urls')),
     path('v1/' , include('reports.urls')),
     path('v1/', include('announcment.urls')),
     # path('v1/announcement/' , include('announcment.urls')),
+    
     
     path('v1/customUser/',include('users.urls')),
     path('', schema_view.with_ui('swagger',

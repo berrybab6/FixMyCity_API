@@ -6,13 +6,10 @@ from django.shortcuts import get_object_or_404
 from django.contrib.gis.geos import GEOSGeometry
 from rest_framework.response import Response
 from django.http import JsonResponse
-
-from .serializers import  InactiveUser, InvalidUser,RoleSerializer, LoginSerializer, SectorAdminSerializer, SectorSerializer, UserSerializer, LoginSectorAdminSerializer , EmailVerificationSerializer, LoginSectorAdminSerializer , LoginSuperAdminSerializer
+from .serializers import  InactiveUser, InvalidUser, ResetPasswordEmailRequestSerializer,RoleSerializer, LoginSerializer, SectorAdminSerializer, SectorSerializer, SetNewPasswordSerializer, UserSerializer, LoginSectorAdminSerializer , EmailVerificationSerializer, LoginSectorAdminSerializer , LoginSuperAdminSerializer
 from .utils import Utils
 from .models import Role, Sector, User
-
 from .utils import Utils
-
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 from permissions import IsSectorAdmin, IsSuperAdmin
@@ -32,6 +29,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from accounts.utils import generate_access_token, generate_refresh_token
 from rest_framework_simplejwt.exceptions import AuthenticationFailed, InvalidToken, TokenError
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse, reverse_lazy
 
 
 class CustomRedirect(HttpResponsePermanentRedirect):
@@ -80,16 +82,16 @@ class RegisterView(APIView):
         print(user)
         # token = get_random_string(length=32)
         token = RefreshToken.for_user(user).access_token
-        verify_link = 'http://localhost:3002' + '/email-verify/' + str( token)
+        verify_link = 'http://localhost:3000' + '/register/' + str( token)
         subject, from_email, to = 'Verify Your Email', 'from@fpn.com', email
-        html_content = render_to_string('accounts/verify_email.html', {'verify_link':verify_link, 'base_url': 'http://localhost:3002/', 'backend_url': 'http://127.0.0.1:8000'}) 
+        html_content = render_to_string('accounts/verify_email.html', {'verify_link':verify_link, 'base_url': 'http://localhost:3000/', 'backend_url': 'http://127.0.0.1:8000'}) 
         text_content = strip_tags(html_content) 
         msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
         msg.attach_alternative(html_content, "text/html")
         msg.send()
 
         # Utils.send_email(data)
-        return Response(data=user_data,  status=status.HTTP_201_CREATED)
+        return Response({"Detail": "succesfully registerd!"},  status=status.HTTP_201_CREATED)
 
 ########################  DASHBOARD #####################
 
@@ -504,5 +506,87 @@ class LoginSuperAdmin(TokenObtainPairView):
             print(e)
             raise InvalidToken(e.args[0])
         return Response({"message": "Sign In Successfull" , "token":serializer.validated_data }  , status=status.HTTP_200_OK)
+    
+    
+    
+    
+
+
+class RequestPasswordResetEmail(generics.GenericAPIView):
+    permission_classes = [AllowAny, ]
+    success_url=reverse_lazy('accounts:password-reset')
+    serializer_class = ResetPasswordEmailRequestSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+
+        email = request.data.get('email', '')
+
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+            uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+            token = PasswordResetTokenGenerator().make_token(user)
+            current_site = get_current_site(
+                request=request).domain
+            print(current_site)
+            # verify_link = 'http://localhost:3002' + '/email-verify/' + str( token)
+            relativeLink = reverse(
+                'accounts:password-reset', kwargs={'uidb64': uidb64, 'token': token})
+
+            redirect_url = request.data.get('redirect_url', '')
+            absurl = 'http://'+current_site + relativeLink 
+            email_body = 'Hello, \n Use link below to reset your password  \n' + \
+                absurl+"?redirect_url="+redirect_url
+            data = {'email_body': email_body, 'to_email': user.email,
+                    'email_subject': 'Reset your passsword'}
+            Utils.send_email(data)
+        return Response({'success': 'We have sent you a link to reset your password'}, status=status.HTTP_200_OK)
+
+
+class PasswordTokenCheckAPI(generics.GenericAPIView):
+    serializer_class = SetNewPasswordSerializer
+    permission_classes = [AllowAny, ]
+
+    def get(self, request, uidb64, token):
+
+        redirect_url = request.GET.get('redirect_url')
+
+        try:
+            id = smart_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(id=id)
+
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                if len(redirect_url) > 3:
+                    return CustomRedirect(redirect_url+'?token_valid=False')
+                else:
+                    return CustomRedirect(os.environ.get('FRONTEND_URL', '')+'?token_valid=False')
+
+            if redirect_url and len(redirect_url) > 3:
+                return CustomRedirect(redirect_url+'?token_valid=True&message=Credentials Valid&uidb64='+uidb64+'&token='+token)
+            else:
+                return CustomRedirect(os.environ.get('FRONTEND_URL', '')+'?token_valid=False')
+
+        except DjangoUnicodeDecodeError as identifier:
+            try:
+                if not PasswordResetTokenGenerator().check_token(user):
+                    return CustomRedirect(redirect_url+'?token_valid=False')
+                    
+            except UnboundLocalError as e:
+                return Response({'error': 'Token is not valid, please request a new one'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class SetNewPasswordAPIView(generics.GenericAPIView):
+    serializer_class = SetNewPasswordSerializer
+    permission_classes = [AllowAny, ]
+
+    def patch(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response({'success': True, 'message': 'Password reset success'}, status=status.HTTP_200_OK)
+
         
-        
+
+
+
+

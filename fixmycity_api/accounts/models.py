@@ -22,6 +22,8 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from datetime import datetime
 from cloudinary.models import CloudinaryField
 
+
+
 # def profile_pic_path(instance, filename):
 #     rand_int = str(random.randint(0, 999999))
 #     return 'user_{0}_profile_pic_{1}'.format(to_global_id('SuperAdminNode',instance.id), rand_int)
@@ -214,46 +216,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         abstract = False
-# Create your models here.
 
-
-    
-    
-    
-# class SectorAdmin(User):
-#     sector_user = models.OneToOneField(User, on_delete=models.CASCADE, parent_link=True)
-#     email = models.EmailField(max_length=100, null=False)
-#     main_sector = models.BooleanField(default=False)
-#     sector = models.ForeignKey(Sector, on_delete=models.CASCADE,related_name="sector", null=True)
-#     @property
-#     def is_main_sector(self):
-#         return self.main_sector
-#     objects = CustomUserManager()
-    
-    
-    
-# class CustomUser(models.Model):
-#     # id =        models.AutoField(primary_key=True)
-#     roles = models.ForeignKey(Role, on_delete=models.CASCADE,db_column='rolesId', null=True)
-    
-#     phone_regex      = RegexValidator( regex   =r'^\+?1?\d{9,14}$', message ="Phone number must be entered in the format: '+9xxxxxxxxx'. Up to 10 digits allowed.")
-#     phone_number     = models.CharField(validators=[phone_regex], max_length=13, unique=True)
-#     first_name       = models.CharField(max_length = 255, null = True)
-#     last_name        = models.CharField(max_length = 255, null = True)
-#     ProfileImage     = CloudinaryField('image' , null=True , blank= True)
-#     USERNAME_FIELD = 'phone_number'
-#     REQUIRED_FIELDS = []
-#     objects = CustomUserManager()
-    
-    
-   
-
-#     def __str__(self):
-#         return self.phone_number
-    
-    # def get_full_name(self):
-    #     return str(self.first_name) + ":"+ str(self.last_name)
-    
     
 class PhoneOTP(models.Model):
     phone_regex        = RegexValidator( regex   =r'^\+?1?\d{9,14}$', message ="Phone number must be entered in the format: '+9xxxxxxxxxx'. Up to 10 digits allowed.")
@@ -265,6 +228,26 @@ class PhoneOTP(models.Model):
 
     def __str__(self):
         return str(self.phone_number) + ' is sent ' + str(self.otp)
+    
+    
+    
+
+
+# @receiver(reset_password_token_created)
+# def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
+
+#     email_plaintext_message = "{}?token={}".format('http://127.0.0.1:3000/newpassword', reset_password_token.key)
+   
+#     send_mail(
+#         # title:
+#         "Password Reset for {title}".format(title="Some website title"),
+#         # message:
+#         email_plaintext_message,
+#         # from:
+#         "wubshetgenetu21@gmail.com",
+#         # to:
+#         [reset_password_token.user.email]
+#     )
 
    
 
