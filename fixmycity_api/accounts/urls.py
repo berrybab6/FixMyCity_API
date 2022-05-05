@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 
 from django.urls import include
 
-from .views import EditProfile, LoginView, PasswordTokenCheckAPI, RegisterView, LoginSerializer, RequestPasswordResetEmail, SetNewPasswordAPIView, TestView,SectorAPIView , LoginSectorAdminView , VerifyEmail , LoginSectorAdmin , LoginSuperAdmin
+from .views import ChangePasswordView, EditProfile, LoginView, PasswordTokenCheckAPI, RegisterView, LoginSerializer, RequestPasswordResetEmail, SetNewPasswordAPIView, TestView,SectorAPIView , LoginSectorAdminView , VerifyEmail , LoginSectorAdmin , LoginSuperAdmin
 
 
 
@@ -39,6 +39,7 @@ urlpatterns = [
     path('login_superadmin/', LoginSuperAdmin.as_view(),   name='login_super_admin'),
    
     path('register/', RegisterView.as_view()),
+    path('api/change-password/', ChangePasswordView.as_view(), name='change-password'),
    
 
     path('sector/',include(router.urls)),
