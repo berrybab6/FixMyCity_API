@@ -39,7 +39,6 @@ class AnnouncementAPIView(viewsets.ModelViewSet):
     
     
     
-    
     def retrieve(self, request, *args, **kwargs):
         params = kwargs
         print(params["pk"])
@@ -98,13 +97,13 @@ class AnnouncementAPIView(viewsets.ModelViewSet):
         
         
         
-    def get_permissions(self):
-        """Set custom permissions for each action."""
-        if self.action in ['update', 'partial_update', 'destroy', 'create']:
-            self.permission_classes = [IsAuthenticated, IsSectorAdmin]
-        elif self.action in ['list' , 'retrieve']:
-            self.permission_classes = [IsAuthenticated  ]
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     """Set custom permissions for each action."""
+    #     if self.action in ['update', 'partial_update', 'destroy', 'create']:
+    #         self.permission_classes = [IsAuthenticated, IsSectorAdmin]
+    #     elif self.action in ['list' , 'retrieve']:
+    #         self.permission_classes = [IsAuthenticated  ]
+    #     return super().get_permissions()
 
     
     
