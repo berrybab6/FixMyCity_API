@@ -21,6 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 import os
+import dj_database_url
+
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
@@ -136,9 +138,9 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'fix',
+        'NAME': 'fixmycity',
         'USER': 'postgres',
-        'PASSWORD': 'test123',
+        'PASSWORD': 'new_password',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
@@ -161,7 +163,8 @@ CORS_ALLOWED_ORIGINS = [
     'http://a544-197-156-111-254.ngrok.io',
     'https://0644-197-156-111-254.ngrok.io',
     'http://0413-197-156-111-254.ngrok.io',
-    "http://e83a-197-156-77-127.ngrok.io"
+    "http://e83a-197-156-77-127.ngrok.io",
+    "https://3b9a-197-156-95-59.ngrok.io"
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://2a06-197-156-86-124.ngrok.io",
@@ -172,6 +175,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://192.168.8.106:3000",
     "http://e83a-197-156-77-127.ngrok.io",
+    "https://3b9a-197-156-95-59.ngrok.io",
     # 'https://7677-197-156-86-169.ngrok.io',
     # 'https://ef71-197-156-86-181.ngrok.io',
     # 'http://a544-197-156-111-254.ngrok.io',
@@ -188,10 +192,13 @@ CORS_ALLOW_METHODS = [
     "PUT",
 ]
 
-# DATABASE_URL = os.environ.get('DATABASE_URL')
-# db_from_env = dj_database_url.config(default=DATABASE_URL, conn_max_age=500, ssl_require=True)
+DATABASE_URL = os.environ.get('DATABASE_URL')
+db_from_env = dj_database_url.config(default=DATABASE_URL, conn_max_age=500, ssl_require=True)
 # DATABASES['default'].update(db_from_env)
+# DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 
+GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH')
+GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH')
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 

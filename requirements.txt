@@ -1,3 +1,5 @@
+# gdal==2.2.3
+
 asgiref==3.5.0
 backports.zoneinfo==0.2.1
 certifi==2021.10.8
@@ -37,3 +39,4 @@ tzdata==2021.5
 uritemplate==4.1.1
 urllib3==1.26.9
 whitenoise==6.0.0
+joblib==1.1.0

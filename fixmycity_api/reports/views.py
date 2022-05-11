@@ -161,19 +161,61 @@ class ReportAPIView(viewsets.ModelViewSet):
         
         
         
-    def get_permissions(self):
-        """Set custom permissions for each action."""
-        if self.action in [ 'partial_update', 'destroy', 'getreportbasedonSectorName' , 'getreportbasedonSectorNameandLocation']:
-            self.permission_classes = [IsAuthenticated, IsSectorAdmin]
-        elif self.action in ['list' , 'retrieve']:
-            self.permission_classes = [IsAuthenticated  ]
-        elif self.action in ['create']:
-            self.permission_classes = [IsAuthenticated , IsCustomUser ]
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     """Set custom permissions for each action."""
+    #     if self.action in [ 'partial_update', 'destroy', 'getreportbasedonSectorName' , 'getreportbasedonSectorNameandLocation']:
+    #         self.permission_classes = [IsAuthenticated, IsSectorAdmin]
+    #     elif self.action in ['list' , 'retrieve']:
+    #         self.permission_classes = [IsAuthenticated  ]
+    #     elif self.action in ['create']:
+    #         self.permission_classes = [IsAuthenticated , IsCustomUser ]
+    #     return super().get_permissions()
     
     
 
 from geopy.geocoders import Nominatim
+class ReportTransfer(APIView):
+    queryset = [Sector.objects.all(), Report.objects.all()]
+    serializer_classes = [ SectorSerializer, ReportSerializer,]
+    permission_classes = (permissions.AllowAny,)
+    # queryset = Report.objects.all().order_by("-postedAt")
+    def get_queryset(self):
+        report = Report.objects.all().order_by("-postedAt")
+        sector = Sector.objects.all()
+        return [report,sector]
+    def put(self, request, *args, **kwargs):
+        sec_type = request.data['sector_type']
+        id =  request.data['report_id']
+        
+        print("IDDD: ",id)
+        report = Report.objects.get(id=id)
+        # sector = Sector.objects.filter("sector_type")
+        if report:
+
+            sector_location = report.location
+            print(sector_location)
+            qs = Sector.objects.filter(sector_type = sec_type)
+
+
+            # pnt = sector_location
+            # qs = qs.annotate(distance= Distance('location' , pnt)).filter(distance__lte=3000, sector_type=sec_type).order_by("-distance")
+            if(qs):
+                nearby_sector = qs.first()
+                if(nearby_sector):
+                    report.sector = nearby_sector
+                    report.save()
+                    serializer = ReportSerializer(report)
+                    
+            # sector = Sector.objects.get(sector_type = sec_type)
+            
+                    return Response({"message": 'you transfered the report',"report":serializer.data}, status=status.HTTP_200_OK)
+                else:
+                    return Response({"message": 'No Sector Found'})
+            else:
+                return Response({"message": 'NO Nearby Sector Found'})
+        else:
+            return Response({"message": 'NO report Found'})
+        
 class ReportStatusView(APIView):
     # permission_classes = (IsAuthenticated, IsCustomUser)
     queryset = [Sector.objects.all(), User.objects.all(), Report.objects.all()]
