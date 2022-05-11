@@ -59,12 +59,14 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'rest_framework',
     'rest_framework_simplejwt',
-    'django_filters',
+    # 'django_filters',
     # 'accounts.apps.AccountsConfig',
     'accounts',
     'users',
     'reports',
-    'announcment'
+    'announcment',
+    'django_filters',
+    # 'django_rest_passwordreset',
     
 ]
 
@@ -93,7 +95,8 @@ REST_FRAMEWORK  = {
         #  'rest_framework.permissions.IsAuthenticated', # make all endpoints private
     ),
      'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-     'PAGE_SIZE': 10
+     'PAGE_SIZE': 10, 
+     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
         
         
         
@@ -295,7 +298,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=2),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15),
     'TOKEN_TYPE_CLAIM': 'access'
 }
@@ -305,3 +308,5 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'wubshetgenetu21@gmail.com'
 EMAIL_HOST_PASSWORD = 'fslgeuvbslfhakax'
+
+

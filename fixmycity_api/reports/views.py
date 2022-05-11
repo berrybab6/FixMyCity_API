@@ -15,7 +15,7 @@ from accounts.serializers import SectorAdminSerializer, SectorSerializer
 # from .serializers import LocationSerializer, ReportSerializer ,ReportUpdateSerializer
 
 
-from rest_framework import status
+from rest_framework import status , filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers, viewsets, permissions
@@ -25,6 +25,8 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.db.models.functions import Distance
 from .apps import ReportsConfig
 from rest_framework.decorators import action
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 
 
@@ -33,11 +35,13 @@ class ReportAPIView(viewsets.ModelViewSet):
     # permission_classes = (IsAuthenticated,)
     # authentication_classes = []
     # permission_classes = (IsAuthenticated,IsSectorAdmin )
-    permission_classes = (permissions.AllowAny,)
-
+    
     http_method_names = ['get', 'post', 'patch' , 'delete' ]
     serializer_class = ReportSerializer
     pagination_class = PageNumberPagination
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filterset_fields = ('id' , 'state' , 'status' , 'spamStatus',)
+    search_fields = ('tag' , 'description' , 'user__first_name', 'user__last_name', 'sector__district_name' , 'user__phone_number')
     queryset = Report.objects.all().order_by("-postedAt")
     def get_queryset(self):
         report = Report.objects.all().order_by("-postedAt")
@@ -48,7 +52,8 @@ class ReportAPIView(viewsets.ModelViewSet):
         sector_name=self.request.user.sector
         print(sector_name)
         report = Report.objects.filter(sector__district_name=sector_name).order_by("-postedAt")
-        serializer = ReportSerializer(report , many= True)
+        # serializer = ReportSerializer(report , many= True)
+        serializer = ReportSerializer(self.filter_queryset(self.get_queryset()), many=True,)
         return Response(serializer.data)
     
     
@@ -60,7 +65,8 @@ class ReportAPIView(viewsets.ModelViewSet):
         qs = super().get_queryset()
         pnt = sector_location
         qs = qs.annotate(distance= Distance('location' , pnt)).filter(distance__lte=3000 ,sector__district_name=sector_name ).order_by("-postedAt")
-        serializer = ReportSerializer(qs , many= True)
+        serializer = ReportSerializer(self.filter_queryset(self.get_queryset()), many=True,)
+        # serializer = ReportSerializer(qs , many= True)
         return Response(serializer.data)
     
     
@@ -99,7 +105,9 @@ class ReportAPIView(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         report = Report.objects.all().order_by("-postedAt")
-        serializer = ReportSerializer(report , many= True)
+        # serializer = ReportSerializer(report , many= True)
+        serializer = ReportSerializer(self.filter_queryset(self.get_queryset()), many=True,)
+        
         qs = super().get_queryset()
       
         latitude = self.request.query_params.get('lat', None)
@@ -129,10 +137,10 @@ class ReportAPIView(viewsets.ModelViewSet):
                 reportserializer.save()
                 serializer = ReportSerializer(report)
 
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response({"detail" : "Report updated successfully!"}, status=status.HTTP_200_OK)
             return Response(reportserializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Report.DoesNotExist:
-            return Response({"detail" : 'Report doest not exist or you dont have permission to update it'} , status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail" : 'Report does not exist or you dont have permission to update it'} , status=status.HTTP_404_NOT_FOUND)
         
         
         

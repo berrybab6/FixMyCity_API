@@ -11,15 +11,20 @@ class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Announcement
         fields = "__all__"
+        read_only_fields = ("id" , "sector" , "sectoradmin")
+        
+        
         # depth = 1
         
         
-    def create(self, validated_data):
-        # sector = 
-        # sectoradmin = 
-        announce = Announcement(title= validated_data['title'],description = validated_data['description'] , image = validated_data['image'] )
-        announce.save()
-        return announce
+    # def create(self,  validated_data ):
+    #     sector = self.request.user.sector.id
+    #     print(sector)
+    #     print(sectoradmin)
+    #     sectoradmin = self.request.user.sector.id
+    #     announce = Announcement( sector = sector , sectoradmin = sectoradmin , title= validated_data['title'],description = validated_data['description'] , image = validated_data['image'] )
+    #     announce.save()
+    #     return announce
         
     
     def to_representation(self, instance):

@@ -10,8 +10,10 @@ class Announcement(models.Model):
     sectoradmin = models.ForeignKey(User, on_delete=models.CASCADE , null=True)
     title       = models.CharField(max_length = 255, null = True)
     description = models.CharField(max_length = 255, null = True)
-    date        = models.DateTimeField(auto_now=True ,null=True )
+    createdAt    = models.DateTimeField(auto_now_add=True , null=True)
+    updatedAt  = models.DateTimeField(auto_now=True ,null=True )
     image       = CloudinaryField('image' , null=True , blank=True)
+    
    
     def __str__(self):
         return self.title

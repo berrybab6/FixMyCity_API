@@ -1,13 +1,13 @@
 
 from django import views
-from django.urls import path
+from django.urls import path, reverse_lazy
 from django.conf import settings
 from django.conf.urls.static import static
 
 
 from django.urls import include
 
-from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestView,SectorAPIView , LoginSectorAdminView , VerifyEmail , LoginSectorAdmin , LoginSuperAdmin
+from .views import ChangePasswordView, EditProfile, LoginView, PasswordTokenCheckAPI, RegisterView, LoginSerializer, RequestPasswordResetEmail, SetNewPasswordAPIView, TestView,SectorAPIView , LoginSectorAdminView , VerifyEmail , LoginSectorAdmin , LoginSuperAdmin
 
 
 
@@ -16,10 +16,16 @@ from .views import EditProfile, LoginView, RegisterView, LoginSerializer, TestVi
 
 
 from rest_framework import routers
+from django.urls import path
 app_name = 'accounts'
 router = routers.DefaultRouter()
 
 router.register('sector',SectorAPIView,basename='sector')
+
+from rest_framework_simplejwt.views import (
+    TokenRefreshView,
+)
+
 
 
 
@@ -27,11 +33,14 @@ urlpatterns = [
 
     path('register/', RegisterView.as_view() ,  name="register"),
     path('email-verify/', VerifyEmail.as_view(), name='email-verify'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     path('login_sectoradmin/', LoginSectorAdmin.as_view(), name='login_sector_admin'),
     path('login_superadmin/', LoginSuperAdmin.as_view(),   name='login_super_admin'),
    
     path('register/', RegisterView.as_view()),
+    path('api/change-password/', ChangePasswordView.as_view(), name='change-password'),
+   
 
     path('sector/',include(router.urls)),
     path("roles/", RoleView.as_view(), name="User by role"),
@@ -48,6 +57,13 @@ urlpatterns = [
     # path('custom_users/<int:pk>',BanCustomUserAPIView.as_view()),
     path('users/',UserView.as_view()),
     path('users/<int:pk>',UserDetailView.as_view()),
+    
+    path('request-reset-email/', RequestPasswordResetEmail.as_view( ),
+         name="request-reset-email"),
+    path('password-reset/<uidb64>/<token>/',
+         PasswordTokenCheckAPI.as_view( ), name='password-reset'),
+    path('password-reset-complete', SetNewPasswordAPIView.as_view(),
+         name='password-reset-complete')
 
     # path('sector/',SectorView.as_view())
 #     path('test/', TestView.as_view()),
