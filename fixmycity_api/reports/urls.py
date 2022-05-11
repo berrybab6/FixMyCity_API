@@ -3,7 +3,7 @@ from rest_framework import routers
 from .views import ReportAPIView ,LikeReportView , ChartDataView , MyReportAPIView, ReportStatusView
 
 from django.urls import path, include
-
+from . import views
 app_name = 'report'
 
 
@@ -18,6 +18,7 @@ urlpatterns = [
     path('like/<int:pk>' ,LikeReportView.as_view()),
 
     path('chart' ,ChartDataView.as_view()),
+    path('transfer/', views.ReportTransfer.as_view()),
     path("report_status/<int:pk>/",ReportStatusView.as_view())
 
 ]
