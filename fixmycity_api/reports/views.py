@@ -1,4 +1,5 @@
 from dis import dis
+import re
 from tracemalloc import start
 
 from turtle import distance
@@ -32,7 +33,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 
 class ReportAPIView(viewsets.ModelViewSet):
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = (permissions.AllowAny,)
     # authentication_classes = []
     # permission_classes = (IsAuthenticated,IsSectorAdmin )
     
@@ -129,15 +130,17 @@ class ReportAPIView(viewsets.ModelViewSet):
         id = self.kwargs.get("pk")
         try:
             
-            print(self.request.user.sector)
+            # print(self.request.user.sector)
             #  announcment = Announcement.objects.filter(sectoradmin__sector_user=self.request.user).get(id=id)
-            report = Report.objects.filter(sector__district_name=self.request.user.sector).get(id=id)
+            # report = Report.objects.filter(sector__district_name=self.request.user.sector).get(id=id)
+            report = Report.objects.get(id=id)
+
             reportserializer = ReportUpdateSerializer(report, data=request.data, partial=True)
             if reportserializer.is_valid():
                 reportserializer.save()
                 serializer = ReportSerializer(report)
 
-                return Response({"detail" : "Report updated successfully!"}, status=status.HTTP_200_OK)
+                return Response({"detail" : "Report updated successfully!", "report":serializer.data}, status=status.HTTP_200_OK)
             return Response(reportserializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Report.DoesNotExist:
             return Response({"detail" : 'Report does not exist or you dont have permission to update it'} , status=status.HTTP_404_NOT_FOUND)
