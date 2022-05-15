@@ -137,16 +137,22 @@ class InactiveUser(AuthenticationFailed):
      default_code = 'user_inactive'
     
 class LoginSectorAdminSerializer(TokenObtainPairSerializer):
-    username_field = User.EMAIL_FIELD
+   
     @classmethod
     def get_token(cls, user):
           token = super(LoginSectorAdminSerializer, cls).get_token(user)
 
           # Add custom claims
-          token['sector']  = user.sector.district_name
-          token['email'] = user.email
-          token['role'] = user.role
-          return token
+          if user.role == 2:
+              token['sector']  = user.sector.district_name
+              token['email'] = user.email
+              token['role'] = user.role
+              return token
+          elif user.role == 1:
+              token['email'] = user.email
+              token['role'] = user.role
+              return token
+              
         
 
     def validate(self, attrs):

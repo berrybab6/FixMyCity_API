@@ -35,8 +35,8 @@ urlpatterns = [
     path('email-verify/', VerifyEmail.as_view(), name='email-verify'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
-    path('login_sectoradmin/', LoginSectorAdmin.as_view(), name='login_sector_admin'),
-    path('login_superadmin/', LoginSuperAdmin.as_view(),   name='login_super_admin'),
+    path('login_admin/', LoginSectorAdmin.as_view(), name='login_admin'),
+#     path('login_superadmin/', LoginSuperAdmin.as_view(),   name='login_super_admin'),
    
     path('register/', RegisterView.as_view()),
     path('api/change-password/', ChangePasswordView.as_view(), name='change-password'),

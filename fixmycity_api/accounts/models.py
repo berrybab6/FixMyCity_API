@@ -50,17 +50,17 @@ class Role(models.Model):
         return str(self.get_id_display())
 
 class CustomUserManager(BaseUserManager):
-    """Define a model manager for User model with no username field."""
+    """Define a model manager for User model with no email field."""
 
-    def _create_user(self, username,password=None,role=None, **extra_fields):
-        """Create and save a User with the given username and password."""
-        if not username:
-            raise ValueError('The given username must be set')
+    def _create_user(self, email,password=None,role=None, **extra_fields):
+        """Create and save a User with the given email and password."""
+        if not email:
+            raise ValueError('The given email must be set')
         # if not role: 
             # raise ValueError('The given Role must be set')
 
         
-        user = self.model(username=username, **extra_fields)
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
         # user.full_name=full_name
         ro = Role.objects.get(id=role)
@@ -70,15 +70,15 @@ class CustomUserManager(BaseUserManager):
         # user.roles.set(ro)
         return user
 
-    def create_user(self,username, password=None,**extra_fields):
+    def create_user(self,email, password=None,**extra_fields):
         # extra_fields.setdefault('roles',3)
         # if extra_fields.get('roles') != 3:
             # raise ValueError('User must have role=3.')
 
-        return self._create_user(username, password,role=3, **extra_fields)
+        return self._create_user(email, password,role=3, **extra_fields)
 
-    def create_sectoradmin(self, username, password=None,**extra_fields):
-        """Create and save a SuperUser with the given username and password."""
+    def create_sectoradmin(self, email, password=None,**extra_fields):
+        """Create and save a SuperUser with the given email and password."""
         extra_fields.setdefault('main_sector', True)
         # extra_fields.setdefault('roles', 2)
 
@@ -87,17 +87,17 @@ class CustomUserManager(BaseUserManager):
         # if extra_fields.get('roles') != 2:
             # raise ValueError('Sector Admin must have role=2.')
 
-        return self._create_user(username, password, role=2,**extra_fields)
+        return self._create_user(email, password, role=2,**extra_fields)
 
-    def create_superuser(self, username, password=None,**extra_fields):
-        """Create and save a SuperUser with the given username and password."""
+    def create_superuser(self, email, password=None,**extra_fields):
+        """Create and save a SuperUser with the given email and password."""
         extra_fields.setdefault('staff', True)
         extra_fields.setdefault('active',True)
         # extra_fields.setdefault('roles', 1)
         # if extra_fields.get('roles') != 1:
             # raise ValueError('Super Admin must have role=1.')
         # ro = Role.objects.get(id=1) 
-        return self._create_user(username, password,role=1,**extra_fields)
+        return self._create_user(email, password,role=1,**extra_fields)
 
 
 def upload_to(instance, filename):
@@ -133,7 +133,7 @@ class Sector(models.Model):
 class User(AbstractBaseUser, PermissionsMixin):
     roles = models.ForeignKey(Role, on_delete=models.CASCADE,db_column='rolesId', null=True)
     id = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=255 , null=False , unique=True)
+    # username = models.CharField(max_length=255 , null=False , unique=True)
     created_at = models.DateTimeField(auto_now=True)
     staff = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
@@ -142,14 +142,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=150, unique=True , null=True)
     sector = models.ForeignKey(Sector, on_delete=models.CASCADE,related_name="sector", null=True)
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
-    phone_number     = models.CharField(validators=[phone_regex], max_length=13, unique=True , null=True)
+    phone_number     = models.CharField( max_length=15, unique=True , null=True)
     first_name       = models.CharField(max_length = 255, null = True)
     last_name        = models.CharField(max_length = 255, null = True)
     ProfileImage     = CloudinaryField('image' , null=True , blank= True)
     # admin = models.BooleanField(default=False)
 
 
-    USERNAME_FIELD = 'username'
+    USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'
     # objects = UserManager()
     REQUIRED_FIELDS =[]
@@ -197,22 +197,22 @@ class User(AbstractBaseUser, PermissionsMixin):
     #         print(token)
     #         return token
     
-    def save(self, *args, **kwargs):
-        if not self.id:
-            username = self.username
-            username_exists = True
-            counter = 1
-            self.username = username
-            while username_exists:
-                try:
-                    username_exists = User.objects.get(username=username)
-                    if username_exists:
-                        username = self.username + '_' + str(counter)
-                        counter += 1
-                except User.DoesNotExist:
-                    self.username = username
-                    break
-        super(User, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.id:
+    #         username = self.username
+    #         username_exists = True
+    #         counter = 1
+    #         self.username = username
+    #         while username_exists:
+    #             try:
+    #                 username_exists = User.objects.get(username=username)
+    #                 if username_exists:
+    #                     username = self.username + '_' + str(counter)
+    #                     counter += 1
+    #             except User.DoesNotExist:
+    #                 self.username = username
+    #                 break
+    #     super(User, self).save(*args, **kwargs)
 
     class Meta:
         abstract = False
@@ -220,7 +220,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     
 class PhoneOTP(models.Model):
     phone_regex        = RegexValidator( regex   =r'^\+?1?\d{9,14}$', message ="Phone number must be entered in the format: '+9xxxxxxxxxx'. Up to 10 digits allowed.")
-    phone_number       = models.CharField(validators=[phone_regex], max_length=10, unique=True)
+    phone_number       = models.CharField(validators=[phone_regex], max_length=15, unique=True)
     otp                = models.CharField(max_length = 9, blank = True, null= True)
     count              = models.IntegerField(default = 0, help_text = 'Number of otp sent')
     logged             = models.BooleanField(default = False, help_text = 'If otp verification got successful')
