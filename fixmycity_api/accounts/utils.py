@@ -52,15 +52,15 @@ class Utils:
     @staticmethod
     def authenticate_user(validated_data):
         from .models import User
-        username = validated_data['username']
+        email = validated_data['email']
         password = validated_data['password']
         
-        user = User.objects.filter(username=username).first()
-        if user and authenticate(username = username, password= password):
+        user = User.objects.filter(email=email).first()
+        if user and authenticate(email = email, password= password):
             return user
             
         
-        return Response({"message":"invalid username or password"})
+        return Response({"message":"invalid email or password"})
     
     
     

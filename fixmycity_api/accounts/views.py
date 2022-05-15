@@ -55,7 +55,7 @@ class VerifyEmail(APIView):
             if not user.is_verified:
                 user.is_verified = True
                 user.password = make_password(request.data['password'])
-                user.username = request.data['username']
+                # user.username = request.data['username']
                 user.first_name = request.data['first_name']
                 user.last_name = request.data['first_name']
                 user.save()

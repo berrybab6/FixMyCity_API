@@ -102,10 +102,10 @@ REST_FRAMEWORK  = {
     
     
     }
-AUTHENTICATION_BACKENDS = [
-    # Application custom auth backend
-    'fixmycity_api.auth.AuthentificationBackend',
-]
+# AUTHENTICATION_BACKENDS = [
+#     # Application custom auth backend
+#     'fixmycity_api.auth.AuthentificationBackend',
+# ]
 
 ROOT_URLCONF = 'fixmycity_api.urls'
 

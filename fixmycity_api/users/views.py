@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from permissions import IsCustomUser
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+import requests
 
 
 def send_otp(phone):
@@ -25,17 +26,35 @@ def send_otp(phone):
 
     if phone:
         key = rand.randint(999, 9999) 
-        return key
-        # account_sid = 'AC5803681f906628f43b3be7c892c7f79d'
-        # auth_token = 'c5c89626159a9144f39025670461a867'
-        # client = Client(account_sid, auth_token)
-        # message = client.messages.create(
-        #                       from_='+12544525448',
-        #                       body ='This is the ship that made the Kessel Run in fourteen parsecs?',
-        #                       to ='+251962782800'
-        #                   )
-        
-        # print(message.status)
+        key2 = " %d " % key
+        print( key2)
+        url = 'https://api.telda.com.et/api/write/SendOTP'
+
+        request_type = "POST"
+        print("this is ", url)
+        data = {
+            "phone": phone,
+            "otp": 12344,
+            "senderName" : "fixmycity",
+            "remark" : "do not share this code with any one"
+            
+            } # post data
+        print("this is json data", data)
+        api_call = requests.request(method='POST', url= url, headers=
+				{
+                  'Content-Type': 'application/json; charset=UTF-8',
+				  'Authorization': 'Basic TmUZkNo12kiDg2EDymmtRIfRhlaPi+W2MTAwMDk2Mjc4MjgwMA==',
+            },
+				json=data)
+                
+                
+        print("response code",api_call)
+        print(api_call.json())
+        if api_call.status_code == 200:
+            return key
+        else:
+            return False
+       
         
     else:
         return False
@@ -64,7 +83,9 @@ class ValidatePhoneSendOTP(APIView):
             user = User.objects.filter(phone_number__iexact = phone)
             if user.exists():
                 otp = send_otp(phone)
-                print(phone, otp)
+                # otp = 12345
+                # key = rand.randint(999, 9999) 
+               
                 if otp:
                     otp = str(otp)
                     count = 0
