@@ -47,7 +47,7 @@ class SectorAdminSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email' , 'roles' , 'sector']
+        fields = ['id','email']
         
     def create(self, validated_data):
         role = Role.objects.get(id=2)
