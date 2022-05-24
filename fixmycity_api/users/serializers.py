@@ -7,7 +7,7 @@ class RegistorUserSerializer(serializers.ModelSerializer):
     class Meta:
 
         model = User
-        fields = ('first_name', 'last_name','phone_number' , 'ProfileImage')
+        fields = ( 'id', 'first_name', 'last_name','phone_number' , 'ProfileImage')
 
         read_only_fields = ['id']
         
@@ -27,7 +27,7 @@ class LoginSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(required=True)
     class Meta:
         model = User
-        fields = ("phone_number" , 'first_name' , 'last_name' , 'ProfileImage')
+        fields = ("id","phone_number" , 'first_name' , 'last_name' , 'ProfileImage')
     # first_name = serializers.CharField(required=True)
     # last_name = serializers.CharField(required=True)
     # ProfileImage = serializers.CharField(required = False)

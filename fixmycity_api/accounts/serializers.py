@@ -27,9 +27,21 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = "__all__"
+        fields = ['id' , 'created_at' , 'staff' , 'active' , 'is_verified', 'main_sector' , 'email', 'sector','phone_number', 'first_name', 'last_name', 'ProfileImage' ]
         extra_kwargs = {'password': {'write_only': True}}
         read_only_fields = ['id']
+    
+    
+     
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        try:
+            sector = Sector.objects.get(pk=data['sector'])
+            data['sector'] = SectorSerializer(sector).data
+        except Sector.DoesNotExist:
+            sector = None
+        
+        return data 
         
         
         

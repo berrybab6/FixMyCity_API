@@ -20,40 +20,42 @@ import requests
 
 def send_otp(phone):
     """
-    This is a helper function to send otp to session stored phones or 
+    This is a help
+    er function to send otp to session stored phones or 
     passed phone number as argument.
     """
 
     if phone:
         key = rand.randint(999, 9999) 
-        key2 = " %d " % key
-        print( key2)
-        url = 'https://api.telda.com.et/api/write/SendOTP'
+        return key
+        # key2 = " %d " % key
+        # print( key2)
+        # url = 'https://api.telda.com.et/api/write/SendOTP'
 
-        request_type = "POST"
-        print("this is ", url)
-        data = {
-            "phone": phone,
-            "otp": key2,
-            "senderName" : "fixmycity",
-            "remark" : "do not share this code with any one"
+        # request_type = "POST"
+        # print("this is ", url)
+        # data = {
+        #     "phone": phone,
+        #     "otp": key2,
+        #     "senderName" : "fixmycity",
+        #     "remark" : "do not share this code with any one"
             
-            } # post data
-        print("this is json data", data)
-        api_call = requests.request(method='POST', url= url, headers=
-				{
-                  'Content-Type': 'application/json; charset=UTF-8',
-				  'Authorization': 'Basic TmUZkNo12kiDg2EDymmtRIfRhlaPi+W2MTAwMDk2Mjc4MjgwMA==',
-            },
-				json=data)
+        #     } # post data
+        # print("this is json data", data)
+        # api_call = requests.request(method='POST', url= url, headers=
+		# 		{
+        #           'Content-Type': 'application/json; charset=UTF-8',
+		# 		  'Authorization': 'Basic TmUZkNo12kiDg2EDymmtRIfRhlaPi+W2MTAwMDk2Mjc4MjgwMA==',
+        #     },
+		# 		json=data)
                 
                 
-        print("response code",api_call)
-        print(api_call.json())
-        if api_call.status_code == 200:
-            return key
-        else:
-            return False
+        # print("response code",api_call)
+        # print(api_call.json())
+        # if api_call.status_code == 200:
+        #     return key
+        # else:
+        #     return False
        
         
     else:
@@ -202,7 +204,7 @@ class ValidateOTP(APIView):
                 return Response({
                     'status' : False,
                     'detail' : 'Phone not recognised. Kindly request a new otp with this number'
-                })
+                },  status=status.HTTP_400_BAD_REQUEST)
 
 
         else:
@@ -267,7 +269,7 @@ class Login(APIView):
                 return Response({
                     'status' : False,
                     'message' : 'Phone not recognised. Kindly request a new otp with this number'
-                })
+                },  status=status.HTTP_400_BAD_REQUEST)
 
 
         else:
@@ -337,12 +339,13 @@ class Register(APIView):
                             'status': False,
                             'message': 'Your otp was not verified earlier. Please go back and verify otp'
 
-                        })
+                        }, status=status.HTTP_400_BAD_REQUEST)
                 else:
                     return Response({
+                        
                     'status' : False,
                     'message' : 'Phone number not recognised. Kindly request a new otp with this number'
-                })
+                }, status=status.HTTP_400_BAD_REQUEST)
                     
 
 
