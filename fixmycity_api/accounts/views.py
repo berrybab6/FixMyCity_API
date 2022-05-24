@@ -82,7 +82,7 @@ class RegisterView(APIView):
         print(user)
         # token = get_random_string(length=32)
         token = RefreshToken.for_user(user).access_token
-        verify_link = 'http://localhost:3000' + '/register/' + str( token)
+        verify_link = 'http://localhost:3000' + '/register/?' +'token='+ str( token)
         subject, from_email, to = 'Verify Your Email', 'from@fpn.com', email
         html_content = render_to_string('accounts/verify_email.html', {'verify_link':verify_link, 'base_url': 'http://localhost:3000/', 'backend_url': 'http://127.0.0.1:8000'}) 
         text_content = strip_tags(html_content) 

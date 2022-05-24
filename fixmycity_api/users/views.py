@@ -34,7 +34,7 @@ def send_otp(phone):
         print("this is ", url)
         data = {
             "phone": phone,
-            "otp": 12344,
+            "otp": key2,
             "senderName" : "fixmycity",
             "remark" : "do not share this code with any one"
             

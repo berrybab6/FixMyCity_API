@@ -53,8 +53,8 @@ class ReportAPIView(viewsets.ModelViewSet):
         sector_name=self.request.user.sector
         print(sector_name)
         report = Report.objects.filter(sector__district_name=sector_name).order_by("-postedAt")
-        # serializer = ReportSerializer(report , many= True)
-        serializer = ReportSerializer(self.filter_queryset(self.get_queryset()), many=True,)
+        serializer = ReportSerializer(report , many= True)
+        # serializer = ReportSerializer(self.filter_queryset(self.get_queryset()), many=True,)
         return Response(serializer.data)
     
     
