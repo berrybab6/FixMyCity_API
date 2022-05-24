@@ -40,9 +40,10 @@ class ReportAPIView(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch' , 'delete' ]
     serializer_class = ReportSerializer
     pagination_class = PageNumberPagination
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
     filterset_fields = ('id' , 'state' , 'status' , 'spamStatus',)
     search_fields = ('tag' , 'description' , 'user__first_name', 'user__last_name', 'sector__district_name' , 'user__phone_number')
+    # ordering = ('noOfLikes',)
     queryset = Report.objects.all().order_by("-postedAt")
     def get_queryset(self):
         report = Report.objects.all().order_by("-postedAt")
@@ -354,7 +355,7 @@ class MyReportAPIView(viewsets.ModelViewSet):
             reportserializer = MyReportUpdateSerializer(report, data=request.data, partial=True)
             if reportserializer.is_valid():
                 reportserializer.save()
-                return Response(reportserializer.data, status=status.HTTP_200_OK)
+                return Response({"detail": "Data Updated!"}, status=status.HTTP_200_OK)
             return Response(reportserializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Report.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
