@@ -39,7 +39,7 @@ class Report(models.Model):
     
     
     def __str__(self):
-        return self.description
+        return self.id
     
     
     def number_of_likes(self):

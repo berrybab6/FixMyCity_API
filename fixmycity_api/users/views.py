@@ -248,13 +248,13 @@ class Login(APIView):
                         serializedUser = LoginSerializer(user)
                         token = Utils.encode_token(user)
                         old.delete()
-                        return Response({"data":serializedUser.data, "token":token})
+                        return Response({"message":"successfull","data":serializedUser.data, "token":token})
                     else:
                         return Response({
                             'status': False,
                             'message': 'Your otp was not verified earlier. Please go back and verify otp'
 
-                        })
+                        }, status=status.HTTP_400_BAD_REQUEST)
 
                     # return Response({
                     #     'status' : True, 
@@ -264,7 +264,7 @@ class Login(APIView):
                     return Response({
                         'status' : False, 
                         'message' : 'OTP incorrect, please try again'
-                    })
+                    } , status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response({
                     'status' : False,
@@ -276,7 +276,7 @@ class Login(APIView):
             return Response({
                 'status' : 'False',
                 'message' : 'Either phone or otp was not recieved in Post request'
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
             
             
 

@@ -3,6 +3,7 @@ import re
 from tracemalloc import start
 
 from turtle import distance
+import requests
 from rest_framework.views import APIView
 from .models import F, Report
 from .serializers import LocationSerializer, ReportSerializer ,ReportUpdateSerializer, MyReportUpdateSerializer
@@ -73,31 +74,95 @@ class ReportAPIView(viewsets.ModelViewSet):
     
     
     
-    
-    
+    def send_spam_image(self,image):
+        if image:
+            
+            url = 'http://192.168.0.7:8001/api/imageClassify/'
+
+            request_type = "POST"
+            print("this is ", url)
+            # result = json.dumps(image, cls=MyJsonEncoder)
+            # print("Image:",result)
+            # img_arr=cv2.imread(str(image))
+            data = {
+                "image": image
+            }
+
+      
+            print("this is json data",data)
+            api_call = requests.post(url= url,data=data)
+                
+                
+            print(api_call.json())
+            is_spam = api_call.json().get("spam")
+            print("Is Spam:",is_spam)
+            return JsonResponse({"spam" : is_spam})
+        # if api_call.status_code == 200:s
+        #     return key
+        # else:
+        #     return False
+       
         
+        else:
+            return JsonResponse({"Me":"Hello"})
     
     def create(self, request, **kwargs):
         latitude = request.data['latitude']
         longtiude = request.data['longtiude']
         pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude))
-        serializer_obj = ReportSerializer(data=request.data)
+       
         image = request.data['image']
         # lin_reg_model = ReportsConfig.model
         # image_predicted = lin_reg_model.predict(image)
-        image_predicted = 0
-        if image_predicted == 1:
+        if image:
             serializer_obj = ReportSerializer(data=request.data)
-            if serializer_obj.is_valid():
-                serializer_obj.save(location=pnt , spamStatus=True)
-                return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
-            return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            serializer_obj = ReportSerializer(data=request.data , )
+
             if serializer_obj.is_valid():
                 serializer_obj.save(location=pnt , spamStatus=False)
-                return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
-            return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+
+                img = serializer_obj.data["image"]
+                print("IMG",img)
+                spam = self.send_spam_image(img).json().get("spam")
+                print("sPAMMMMm:",spam)
+                image_predicted = spam
+                if image_predicted == 1:
+                    serializer_obj = ReportSerializer(data=request.data)
+                    if serializer_obj.is_valid():
+                        serializer_obj.save(location=pnt , spamStatus=True)
+                        return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
+                    return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+                elif image_predicted==0:
+                    # serializer_obj = ReportSerializer(data=request.data , )
+                    # if serializer_obj.is_valid():
+                        # serializer_obj.save(location=pnt , spamStatus=False)
+                        
+                    return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
+                    # return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)  
+    
+    # def create(self, request, **kwargs):
+        
+    #     latitude = request.data['latitude']
+    #     longtiude = request.data['longtiude']
+    #     pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude))
+    #     serializer_obj = ReportSerializer(data=request.data)
+    #     image = request.data['image']
+    #     # lin_reg_model = ReportsConfig.model
+    #     # image_predicted = lin_reg_model.predict(image)
+    #     self.send_spam_image(image)
+    #     image_predicted = 0
+    #     if image_predicted == 1:
+    #         serializer_obj = ReportSerializer(data=request.data)
+    #         if serializer_obj.is_valid():
+    #             serializer_obj.save(location
+    #                                 =pnt , spamStatus=True)
+    #             return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
+    #         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     else:
+    #         serializer_obj = ReportSerializer(data=request.data , )
+    #         if serializer_obj.is_valid():
+    #             serializer_obj.save(location=pnt , spamStatus=False)
+    #             return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
+    #         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
             
     
     
