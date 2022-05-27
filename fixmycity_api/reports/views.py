@@ -151,7 +151,7 @@ class ReportAPIView(viewsets.ModelViewSet):
         # image_predicted = lin_reg_model.predict(image)
         if image:
             user_c=self.request.user
-            if user_c and user_c.active:
+            if user_c and not user_c.is_banned:
                 serializer_obj = ReportSerializer(data=request.data)
 
                 if serializer_obj.is_valid():
@@ -177,7 +177,7 @@ class ReportAPIView(viewsets.ModelViewSet):
                             if user: 
                                 user.count_strike = user.count_strike+1
                                 if user.count_strike >= 3:
-                                    user.active = False
+                                    user.is_banned = True
                                 else:
                                     pass
                                 user.save() 
@@ -323,7 +323,7 @@ class ReportAPIView(viewsets.ModelViewSet):
                     user = User.objects.get(id=report.user.id)
                     user.count_strike = user.count_strike + 1
                     if user.count >=3:
-                        user.active = False
+                        user.is_banned = True
                     user.save()
             elif (not (spamStat == is_spam)):
                 if User.objects.filter(id=report.user.id).exists():
