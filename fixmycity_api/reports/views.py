@@ -1,4 +1,5 @@
 from dis import dis
+from math import fabs
 import re
 from tracemalloc import start
 
@@ -350,7 +351,7 @@ class LikeReportView(APIView):
             reportserializer = ReportLikeSerializer(report, data=request.data, partial=True)
             if reportserializer.is_valid() and report.noOfLikes.filter(id=request.user.id).exists():
                 
-                reportserializer.save()
+                reportserializer.save(likeornot="False")
                 serializer = ReportLikeSerializer(report)
                 report.noOfLikes.remove(request.user)
                 
@@ -360,7 +361,7 @@ class LikeReportView(APIView):
         
             elif reportserializer.is_valid() and  not report.noOfLikes.filter(id=request.user.id).exists():
                
-                reportserializer.save()
+                reportserializer.save(likeornot="True")
                 serializer = ReportLikeSerializer(report)
                 report.noOfLikes.add(request.user)
                
