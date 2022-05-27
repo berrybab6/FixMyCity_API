@@ -147,6 +147,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name        = models.CharField(max_length = 255, null = True)
     ProfileImage     = CloudinaryField('image' , null=True , blank= True)
     # admin = models.BooleanField(default=False)
+    count_strike = models.IntegerField(default=0)
 
 
     USERNAME_FIELD = 'email'

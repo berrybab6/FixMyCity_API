@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from accounts.models import User, PhoneOTP
 from rest_framework.views import APIView
-from .serializers import RegistorUserSerializer  , LoginSerializer ,UpdateUserSerializer , ValidatePhoneSerializer , ValidateOtpSerializer
+from .serializers import RegistorUserSerializer ,RemoveFromBanSerializer , LoginSerializer ,UpdateUserSerializer , ValidatePhoneSerializer , ValidateOtpSerializer
 from rest_framework import permissions, generics, status
 from django.contrib.auth import login
 from accounts.utils import Utils
@@ -12,7 +12,7 @@ from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny
 # from twilio.rest import Client
 from rest_framework.permissions import IsAuthenticated
-from permissions import IsCustomUser
+from permissions import IsCustomUser,IsSuperAdmin
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 import requests
@@ -386,6 +386,29 @@ class EditProfile(APIView):
 
     
   
+class RemoveFromBanUser(APIView):
+    permission_classes =  [IsSuperAdmin]
+    serializer_class = RemoveFromBanSerializer
+    queryset = User.objects.all()
+    @swagger_auto_schema(request_body=RemoveFromBanSerializer)
+
+    def put(self, request, pk=None):
+        try:
+            # exist then update
+            profile = User.objects.get(id=pk)
+            if profile and profile.roles.id == 3:
+                profile.active = True
+                profile.save()
+                # profile.count_strike = profile.count_strike -1
+
+                serializer = RemoveFromBanSerializer(profile)
+            
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+
         
 
 

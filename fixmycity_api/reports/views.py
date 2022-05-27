@@ -31,7 +31,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 
 
-
+import datetime
 
 class ReportAPIView(viewsets.ModelViewSet):
     permission_classes = (permissions.AllowAny,)
@@ -72,7 +72,39 @@ class ReportAPIView(viewsets.ModelViewSet):
         # serializer = ReportSerializer(qs , many= True)
         return Response(serializer.data)
     
-    
+    @action(detail=False)
+    def getReportChartView(self, request):
+        zare = datetime.date.today()
+        year = 2022
+        month = 0
+
+        a_year_ago = zare - datetime.timedelta(days=30*12)
+        
+        reports_by_month = {}
+        for i in range(1,13):
+            try:
+                if Report.objects.filter(postedAt__year__gte=year,
+                              postedAt__month=i).exists():
+                    reports = Report.objects.filter(
+                            postedAt__year=year,
+                              postedAt__month=i)
+                    reports_m = {}
+
+                    if reports.filter(status="UNRESOLVED").exists():
+
+                        unresolved = reports.filter(status="UNRESOLVED").count()
+                        reports_m["unresolved"] = unresolved
+                    if reports.filter(spamStatus=True).exists():
+                        spamStatus=  reports.filter(spamStatus=True).count()
+                        reports_m["spam_status"] = spamStatus
+                    if reports.filter(status="RESOLVED").exists():
+                        resolved = reports.filter(status="RESOLVED").count()
+                        reports_m["resolved"] = resolved
+                    name = "month_"+str(i)
+                    reports_by_month[name] = reports_m
+            except Exception as e:
+                return False
+        return JsonResponse({"response":reports_by_month})
     
     def send_spam_image(self,image):
         if image:
@@ -136,6 +168,14 @@ class ReportAPIView(viewsets.ModelViewSet):
                         
                         report.spamStatus= True
                         report.save()
+                        user = User.objects.get(id=report.user.id)
+                        if user: 
+                            user.count_strike = user.count_strike+1
+                            if user.count_strike >= 3:
+                                user.active = False
+                            else:
+                                pass
+                            user.save() 
                         print("Statusss-",report.spamStatus)
                         return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
                     return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -208,6 +248,24 @@ class ReportAPIView(viewsets.ModelViewSet):
             #  announcment = Announcement.objects.filter(sectoradmin__sector_user=self.request.user).get(id=id)
             # report = Report.objects.filter(sector__district_name=self.request.user.sector).get(id=id)
             report = Report.objects.get(id=id)
+            is_spam = report.spamStatus
+            spamStat = request.data.get("spamStatus",False)
+
+            if spamStat:
+                if User.objects.filter(id=report.user.id).exists():
+                    user = User.objects.get(id=report.user.id)
+                    user.count_strike = user.count_strike + 1
+                    if user.count >=3:
+                        user.active = False
+                    user.save()
+            elif (not (spamStat == is_spam)):
+                if User.objects.filter(id=report.user.id).exists():
+                    user = User.objects.get(id=report.user.id)
+                    user.count_strike = user.count_strike - 1
+                    user.save()
+            else: 
+                pass    
+            
 
             reportserializer = ReportUpdateSerializer(report, data=request.data, partial=True)
             if reportserializer.is_valid():

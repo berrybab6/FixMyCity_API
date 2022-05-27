@@ -1,7 +1,7 @@
 
 from django.urls import path
 from django.urls import include
-from .views import ValidatePhoneSendOTP  ,  Register , Login , ValidateOTP , EditProfile
+from .views import ValidatePhoneSendOTP ,RemoveFromBanUser ,  Register , Login , ValidateOTP , EditProfile
 
 
 app_name = "users"
@@ -13,6 +13,7 @@ urlpatterns = [
     path('registor/', Register.as_view()),
     path('edit_photo/',EditProfile.as_view()),
     path('api/', include('rest_framework.urls')),
+    path('removeban/<int:pk>',  RemoveFromBanUser.as_view())
 
    
 ]

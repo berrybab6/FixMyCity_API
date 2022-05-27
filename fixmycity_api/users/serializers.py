@@ -2,6 +2,11 @@ from rest_framework import serializers
 from accounts.models import PhoneOTP, User , Role
 
 
+class RemoveFromBanSerializer(serializers.ModelSerializer):
+   
+    class Meta:
+        model = User
+        fields = ('active',)
 
 class RegistorUserSerializer(serializers.ModelSerializer):
     class Meta:
