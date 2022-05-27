@@ -6,7 +6,7 @@ class RemoveFromBanSerializer(serializers.ModelSerializer):
    
     class Meta:
         model = User
-        fields = ('active',)
+        fields = ('is_banned',)
 
 class RegistorUserSerializer(serializers.ModelSerializer):
     class Meta:
