@@ -301,7 +301,7 @@ class Register(APIView):
             phone_number = str(phone_number)
             user = User.objects.filter(phone_number__iexact = phone_number)
             if user.exists():
-                return Response({'status': False, 'message': 'Phone Number already have account associated.'})
+                return Response({'status': False, 'message': 'Phone Number already have account associated.' },  status=status.HTTP_400_BAD_REQUEST)
             else:
                 old = PhoneOTP.objects.filter(phone_number__iexact = phone_number)
                 if old.exists():
@@ -330,6 +330,7 @@ class Register(APIView):
 
                         old.delete()
                         return Response({
+                            "message":"successfull",
                             'data' : serializedUser.data, 
                             'token' : token
                         })
@@ -355,7 +356,7 @@ class Register(APIView):
             return Response({
                 'status' : 'False',
                 'message' : 'Either first_name or last_name was not recieved in Post request'
-            })
+            },  status=status.HTTP_400_BAD_REQUEST)
             
             
             

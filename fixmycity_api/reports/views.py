@@ -6,7 +6,7 @@ from turtle import distance
 import requests
 from rest_framework.views import APIView
 from .models import F, Report
-from .serializers import LocationSerializer, ReportSerializer ,ReportUpdateSerializer, MyReportUpdateSerializer
+from .serializers import LocationSerializer, ReportLikeSerializer, ReportSerializer ,ReportUpdateSerializer, MyReportUpdateSerializer
 
 
 from django.http import JsonResponse
@@ -96,7 +96,7 @@ class ReportAPIView(viewsets.ModelViewSet):
             print(api_call.json())
             is_spam = api_call.json().get("spam")
             print("Is Spam:",is_spam)
-            return JsonResponse({"spam" : is_spam})
+            return is_spam
         # if api_call.status_code == 200:s
         #     return key
         # else:
@@ -118,17 +118,25 @@ class ReportAPIView(viewsets.ModelViewSet):
             serializer_obj = ReportSerializer(data=request.data)
 
             if serializer_obj.is_valid():
-                serializer_obj.save(location=pnt , spamStatus=False)
+                serializer_obj.save(location=pnt , spamStatus=True)
 
                 img = serializer_obj.data["image"]
                 print("IMG",img)
-                spam = self.send_spam_image(img).json().get("spam")
+                spam = self.send_spam_image(img)
                 print("sPAMMMMm:",spam)
                 image_predicted = spam
                 if image_predicted == 1:
-                    serializer_obj = ReportSerializer(data=request.data)
+                    # serializer_obj = ReportSerializer(data=request.data)
                     if serializer_obj.is_valid():
-                        serializer_obj.save(location=pnt , spamStatus=True)
+                        # serializer_obj.save(location=pnt , spamStatus=True)
+                        # serializer_obj.data["spamStatus"] = True
+                        print("IS___Spam",serializer_obj.data["id"])
+                        id = serializer_obj.data["id"]
+                        report = Report.objects.get(id=id)
+                        
+                        report.spamStatus= True
+                        report.save()
+                        print("Statusss-",report.spamStatus)
                         return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
                     return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
                 elif image_predicted==0:
@@ -334,18 +342,63 @@ class ReportStatusView(APIView):
 
         
 class LikeReportView(APIView):
-    # permission_classes = (IsAuthenticated, IsCustomUser)
-    permission_classes = (permissions.AllowAny,)
-    def post(self, request, *args, **kwargs):
+    
+    def put(self, request, pk=None):
         id = self.kwargs.get("pk")
-        report = Report.objects.get(id=id)
-        if report.noOfLikes.filter(id=request.user.id).exists():
-            report.noOfLikes.remove(request.user)
-            return Response({"message": 'you disliked the report'}, status=status.HTTP_201_CREATED)
+        try:
+            report = Report.objects.get(id=id)
+            reportserializer = ReportLikeSerializer(report, data=request.data, partial=True)
+            if reportserializer.is_valid() and report.noOfLikes.filter(id=request.user.id).exists():
+                
+                reportserializer.save()
+                serializer = ReportLikeSerializer(report)
+                report.noOfLikes.remove(request.user)
+                
+
+                return Response({"message": 'you disliked the report' , "data": serializer.data },  status=status.HTTP_201_CREATED)
+            # return Response(reportserializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+            elif reportserializer.is_valid() and  not report.noOfLikes.filter(id=request.user.id).exists():
+               
+                reportserializer.save()
+                serializer = ReportLikeSerializer(report)
+                report.noOfLikes.add(request.user)
+               
+
+                return Response({"message": 'you liked the report' , "data": serializer.data },  status=status.HTTP_201_CREATED)
+            # return Response(reportserializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Report.DoesNotExist:
+            return Response({"detail" : 'Report does not exist or you dont have permission to update it'} , status=status.HTTP_404_NOT_FOUND)
+        
+        
+    
+    
+    
+    # permission_classes = (IsAuthenticated, IsCustomUser)
+    # permission_classes = (permissions.AllowAny,)
+    # def post(self, request, *args, **kwargs):
+    #     id = self.kwargs.get("pk")
+    #     report = Report.objects.get(id=id)
+    #     if report.noOfLikes.filter(id=request.user.id).exists():
+    #         reportserializer = ReportLikeSerializer(report, data=request.data)
+    #         if reportserializer.is_valid():
+    #             reportserializer.save()
+    #             serializer = ReportLikeSerializer(report)
+    #             report.noOfLikes.remove(request.user)
+                
+           
+    #         return Response({"message": 'you disliked the report' , "data": serializer.data },  status=status.HTTP_201_CREATED)
             
-        else:
-            report.noOfLikes.add(request.user.id)
-            return Response({"message": 'you liked the report'}, status=status.HTTP_201_CREATED)
+    #     else:
+    #         reportserializer = ReportLikeSerializer(report, data=request.data)
+            
+    #         if reportserializer.is_valid():
+    #             reportserializer.save()
+    #             serializer = ReportLikeSerializer(report)
+    #             report.noOfLikes.add(request.user.id)
+                
+    #         return Response({"message": 'you liked the report' ,  "data": serializer.data}, status=status.HTTP_201_CREATED)
         
 
 class ChartDataView(APIView):
