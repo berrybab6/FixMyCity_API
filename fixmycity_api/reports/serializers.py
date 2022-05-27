@@ -12,7 +12,7 @@ class ReportSerializer(serializers.ModelSerializer):
     like_count = serializers.SerializerMethodField()
     class Meta:
         model = Report
-        fields = ("id" ,"image", "tag", "description",  "postedAt" , "updatedAt" ,"distance" , "like_count" , "sector", "user", "location" ,'state' , 'spamStatus' , 'status', 'latitude', 'longtiude' )
+        fields = ("id" ,"image", "tag", "description",  "postedAt" , "updatedAt" ,"distance" , "like_count" , "sector", "user", "location" ,'state' , 'spamStatus' , 'status', 'latitude', 'longtiude', 'likeornot' )
         read_only_fields = ("id" , "distance")
         # fields = "__all__"
         
@@ -43,7 +43,7 @@ class ReportSerializer(serializers.ModelSerializer):
 class ReportUpdateSerializer(serializers.ModelSerializer):
    class Meta:
         model = Report
-        fields = ( 'sector' ,'state' , 'spamStatus' , 'updatedAt' ,'status')
+        fields = ( 'sector' ,'state' , 'spamStatus' , 'updatedAt' ,'status' , 'likeornot',)
         read_only_fields = ("id" ,"image", "tag", "description",  "postedAt" ,"distance" , "like_count" , "user", "location"  )
         # fields = "__all__"
           
