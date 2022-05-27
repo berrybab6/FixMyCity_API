@@ -16,7 +16,13 @@ from accounts.serializers import SectorAdminSerializer, SectorSerializer
 
 
 # from .serializers import LocationSerializer, ReportSerializer ,ReportUpdateSerializer
-
+import httplib2
+from requests import ConnectionError
+import requests
+import json
+import time
+import os
+connection_timeout = 30 # seconds
 
 from rest_framework import status , filters
 from rest_framework.response import Response
@@ -30,12 +36,12 @@ from .apps import ReportsConfig
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 
-
+import requests
 
 import datetime
 
 class ReportAPIView(viewsets.ModelViewSet):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (IsAuthenticated,)
     # authentication_classes = []
     # permission_classes = (IsAuthenticated,IsSectorAdmin )
     
@@ -46,7 +52,7 @@ class ReportAPIView(viewsets.ModelViewSet):
     filterset_fields = ('id' , 'state' , 'status' , 'spamStatus',)
     search_fields = ('tag' , 'description' , 'user__first_name', 'user__last_name', 'sector__district_name' , 'user__phone_number')
     # ordering = ('noOfLikes',)
-    queryset = Report.objects.all().order_by("-postedAt")
+    queryset = [Report.objects.all().order_by("-postedAt"), User.objects.all()]
     def get_queryset(self):
         report = Report.objects.all().order_by("-postedAt")
         return report
@@ -106,38 +112,43 @@ class ReportAPIView(viewsets.ModelViewSet):
             except Exception as e:
                 return False
         return JsonResponse({"response":reports_by_month})
-    
+
     def send_spam_image(self,image):
         if image:
             
             url = 'http://192.168.0.7:8001/api/imageClassify/'
-
-            request_type = "POST"
-            print("this is ", url)
-            # result = json.dumps(image, cls=MyJsonEncoder)
-            # print("Image:",result)
-            # img_arr=cv2.imread(str(image))
-            data = {
-                "image": image
-            }
+            start_time = time.time()
+            while True:
+                try:
+                    get_updates = json.loads(requests.get(url).content)
+                    response = requests.get(url)
+                    data = {
+                        "image": image
+                     }
 
       
-            print("this is json data",data)
-            api_call = requests.post(url= url,data=data)
+                    print("this is json data",data)
                 
-                
-            print(api_call.json())
-            is_spam = api_call.json().get("spam")
-            print("Is Spam:",is_spam)
-            return is_spam
-        # if api_call.status_code == 200:s
-        #     return key
-        # else:
-        #     return False
+                    api_call = requests.post(url= url,data=data)
+                    
+                    
+                    print(api_call.json())
+                    is_spam = api_call.json().get("spam")
+                    print("Is Spam:",is_spam)
+                    return is_spam
+                except ConnectionError:
+                    if time.time() > start_time + connection_timeout:
+                        raise Exception('Unable to get updates after {} seconds of ConnectionErrors'.format(connection_timeout))
+                    else:
+                        time.sleep(1) 
        
-        
         else:
+            print('Web site exists')
+
             return JsonResponse({"Me":"Hello"})
+        
+           
+            
     
     
     
@@ -150,47 +161,55 @@ class ReportAPIView(viewsets.ModelViewSet):
         # lin_reg_model = ReportsConfig.model
         # image_predicted = lin_reg_model.predict(image)
         if image:
-            user_c=self.request.user
-            if user_c and not user_c.is_banned:
-                serializer_obj = ReportSerializer(data=request.data)
+            user_c=self.request.user.id
+            # print("User", self.request.user.phone_number)
+            if  User.objects.filter(id = user_c).exists():
+                user = User.objects.get(id = self.request.user.id)
+                if not user.is_banned:
+                    serializer_obj = ReportSerializer(data=request.data)
 
-                if serializer_obj.is_valid():
-                    serializer_obj.save(location=pnt , spamStatus=True)
+                    if serializer_obj.is_valid():
+                        serializer_obj.save(location=pnt , spamStatus=True)
 
-                    img = serializer_obj.data["image"]
-                    print("IMG",img)
-                    spam = self.send_spam_image(img)
-                    print("sPAMMMMm:",spam)
-                    image_predicted = spam
-                    if image_predicted == 1:
-                        # serializer_obj = ReportSerializer(data=request.data)
-                        if serializer_obj.is_valid():
-                            # serializer_obj.save(location=pnt , spamStatus=True)
-                            # serializer_obj.data["spamStatus"] = True
-                            print("IS___Spam",serializer_obj.data["id"])
-                            id = serializer_obj.data["id"]
-                            report = Report.objects.get(id=id)
-                            
-                            report.spamStatus= True
-                            report.save()
-                            user = User.objects.get(id=report.user.id)
-                            if user: 
-                                user.count_strike = user.count_strike+1
-                                if user.count_strike >= 3:
-                                    user.is_banned = True
-                                else:
-                                    pass
-                                user.save() 
-                            print("Statusss-",report.spamStatus)
-                            return Response({"detail": 'Data Created'}, status=status.HTTP_200_OK)
-                        return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
-                    elif image_predicted==0:
-                        # serializer_obj = ReportSerializer(data=request.data , )
-                        # if serializer_obj.is_valid():
-                            # serializer_obj.save(location=pnt , spamStatus=False)
-                            
-                        return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
-                    # return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)  
+                        img = serializer_obj.data["image"]
+                        print("IMG",img)
+                        # spam = self.send_spam_image(img)
+                        # print("sPAMMMMm:",spam)
+                        image_predicted = 1
+                        # image_predicted = spam
+                        if image_predicted == 1:
+                            # serializer_obj = ReportSerializer(data=request.data)
+                            if serializer_obj.is_valid():
+                                # serializer_obj.save(location=pnt , spamStatus=True)
+                                # serializer_obj.data["spamStatus"] = True
+                                print("IS___Spam",serializer_obj.data["id"])
+                                id = serializer_obj.data["id"]
+                                report = Report.objects.get(id=id)
+                                
+                                report.spamStatus= True
+                                report.save()
+                                user = User.objects.get(id=report.user.id)
+                                if user: 
+                                    user.count_strike = user.count_strike+1
+                                    if user.count_strike >= 3:
+                                        user.is_banned = True
+                                    else:
+                                        pass
+                                    user.save() 
+                                print("Statusss-",report.spamStatus)
+                                return Response({"detail": 'Data Created'}, status=status.HTTP_200_OK)
+                            return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+                        elif image_predicted==0:
+                            # serializer_obj = ReportSerializer(data=request.data , )
+                            # if serializer_obj.is_valid():
+                                # serializer_obj.save(location=pnt , spamStatus=False)
+                                
+                            return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
+                        else:
+                            return Response({"error": 'Unable to make Connection'}, status=status.HTTP_201_CREATED)
+
+                    else:
+                        return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)  
             else:
                 return JsonResponse({"message":"User Has Been Banned"},status=status.HTTP_403_FORBIDDEN)
     
@@ -363,15 +382,15 @@ class ReportAPIView(viewsets.ModelViewSet):
         
         
         
-    # def get_permissions(self):
-    #     """Set custom permissions for each action."""
-    #     if self.action in [ 'partial_update', 'destroy', 'getreportbasedonSectorName' , 'getreportbasedonSectorNameandLocation']:
-    #         self.permission_classes = [IsAuthenticated, IsSectorAdmin]
-    #     elif self.action in ['list' , 'retrieve']:
-    #         self.permission_classes = [IsAuthenticated  ]
-    #     elif self.action in ['create']:
-    #         self.permission_classes = [IsAuthenticated , IsCustomUser ]
-    #     return super().get_permissions()
+    def get_permissions(self):
+        """Set custom permissions for each action."""
+        if self.action in [ 'partial_update', 'destroy', 'getreportbasedonSectorName' , 'getreportbasedonSectorNameandLocation']:
+            self.permission_classes = [IsAuthenticated, IsSectorAdmin]
+        elif self.action in ['list' , 'retrieve']:
+            self.permission_classes = [IsAuthenticated  ]
+        elif self.action in ['create']:
+            self.permission_classes = [IsAuthenticated , IsCustomUser ]
+        return super().get_permissions()
     
     
 
