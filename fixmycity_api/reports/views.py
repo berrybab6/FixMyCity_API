@@ -3,9 +3,10 @@ import re
 from tracemalloc import start
 
 from turtle import distance
+import requests
 from rest_framework.views import APIView
 from .models import F, Report
-from .serializers import LocationSerializer, ReportSerializer ,ReportUpdateSerializer, MyReportUpdateSerializer
+from .serializers import LocationSerializer, ReportLikeSerializer, ReportSerializer ,ReportUpdateSerializer, MyReportUpdateSerializer
 
 
 from django.http import JsonResponse
@@ -73,31 +74,103 @@ class ReportAPIView(viewsets.ModelViewSet):
     
     
     
-    
-    
+    def send_spam_image(self,image):
+        if image:
+            
+            url = 'http://192.168.0.7:8001/api/imageClassify/'
+
+            request_type = "POST"
+            print("this is ", url)
+            # result = json.dumps(image, cls=MyJsonEncoder)
+            # print("Image:",result)
+            # img_arr=cv2.imread(str(image))
+            data = {
+                "image": image
+            }
+
+      
+            print("this is json data",data)
+            api_call = requests.post(url= url,data=data)
+                
+                
+            print(api_call.json())
+            is_spam = api_call.json().get("spam")
+            print("Is Spam:",is_spam)
+            return is_spam
+        # if api_call.status_code == 200:s
+        #     return key
+        # else:
+        #     return False
+       
         
+        else:
+            return JsonResponse({"Me":"Hello"})
     
     def create(self, request, **kwargs):
         latitude = request.data['latitude']
         longtiude = request.data['longtiude']
         pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude))
-        serializer_obj = ReportSerializer(data=request.data)
+       
         image = request.data['image']
         # lin_reg_model = ReportsConfig.model
         # image_predicted = lin_reg_model.predict(image)
-        image_predicted = 0
-        if image_predicted == 1:
+        if image:
             serializer_obj = ReportSerializer(data=request.data)
+
             if serializer_obj.is_valid():
                 serializer_obj.save(location=pnt , spamStatus=True)
-                return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
-            return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            serializer_obj = ReportSerializer(data=request.data , )
-            if serializer_obj.is_valid():
-                serializer_obj.save(location=pnt , spamStatus=False)
-                return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
-            return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+
+                img = serializer_obj.data["image"]
+                print("IMG",img)
+                spam = self.send_spam_image(img)
+                print("sPAMMMMm:",spam)
+                image_predicted = spam
+                if image_predicted == 1:
+                    # serializer_obj = ReportSerializer(data=request.data)
+                    if serializer_obj.is_valid():
+                        # serializer_obj.save(location=pnt , spamStatus=True)
+                        # serializer_obj.data["spamStatus"] = True
+                        print("IS___Spam",serializer_obj.data["id"])
+                        id = serializer_obj.data["id"]
+                        report = Report.objects.get(id=id)
+                        
+                        report.spamStatus= True
+                        report.save()
+                        print("Statusss-",report.spamStatus)
+                        return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
+                    return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+                elif image_predicted==0:
+                    # serializer_obj = ReportSerializer(data=request.data , )
+                    # if serializer_obj.is_valid():
+                        # serializer_obj.save(location=pnt , spamStatus=False)
+                        
+                    return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
+                    # return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)  
+    
+    # def create(self, request, **kwargs):
+        
+    #     latitude = request.data['latitude']
+    #     longtiude = request.data['longtiude']
+    #     pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude))
+    #     serializer_obj = ReportSerializer(data=request.data)
+    #     image = request.data['image']
+    #     # lin_reg_model = ReportsConfig.model
+    #     # image_predicted = lin_reg_model.predict(image)
+    #     self.send_spam_image(image)
+    #     image_predicted = 0
+    #     if image_predicted == 1:
+    #         serializer_obj = ReportSerializer(data=request.data)
+    #         if serializer_obj.is_valid():
+    #             serializer_obj.save(location
+    #                                 =pnt , spamStatus=True)
+    #             return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
+    #         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     else:
+    #         serializer_obj = ReportSerializer(data=request.data , )
+    #         if serializer_obj.is_valid():
+    #             serializer_obj.save(location=pnt , spamStatus=False)
+    #             return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
+    #         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
             
     
     
@@ -269,18 +342,63 @@ class ReportStatusView(APIView):
 
         
 class LikeReportView(APIView):
-    # permission_classes = (IsAuthenticated, IsCustomUser)
-    permission_classes = (permissions.AllowAny,)
-    def post(self, request, *args, **kwargs):
+    
+    def put(self, request, pk=None):
         id = self.kwargs.get("pk")
-        report = Report.objects.get(id=id)
-        if report.noOfLikes.filter(id=request.user.id).exists():
-            report.noOfLikes.remove(request.user)
-            return Response({"message": 'you disliked the report'}, status=status.HTTP_201_CREATED)
+        try:
+            report = Report.objects.get(id=id)
+            reportserializer = ReportLikeSerializer(report, data=request.data, partial=True)
+            if reportserializer.is_valid() and report.noOfLikes.filter(id=request.user.id).exists():
+                
+                reportserializer.save()
+                serializer = ReportLikeSerializer(report)
+                report.noOfLikes.remove(request.user)
+                
+
+                return Response({"message": 'you disliked the report' , "data": serializer.data },  status=status.HTTP_201_CREATED)
+            # return Response(reportserializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+            elif reportserializer.is_valid() and  not report.noOfLikes.filter(id=request.user.id).exists():
+               
+                reportserializer.save()
+                serializer = ReportLikeSerializer(report)
+                report.noOfLikes.add(request.user)
+               
+
+                return Response({"message": 'you liked the report' , "data": serializer.data },  status=status.HTTP_201_CREATED)
+            # return Response(reportserializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Report.DoesNotExist:
+            return Response({"detail" : 'Report does not exist or you dont have permission to update it'} , status=status.HTTP_404_NOT_FOUND)
+        
+        
+    
+    
+    
+    # permission_classes = (IsAuthenticated, IsCustomUser)
+    # permission_classes = (permissions.AllowAny,)
+    # def post(self, request, *args, **kwargs):
+    #     id = self.kwargs.get("pk")
+    #     report = Report.objects.get(id=id)
+    #     if report.noOfLikes.filter(id=request.user.id).exists():
+    #         reportserializer = ReportLikeSerializer(report, data=request.data)
+    #         if reportserializer.is_valid():
+    #             reportserializer.save()
+    #             serializer = ReportLikeSerializer(report)
+    #             report.noOfLikes.remove(request.user)
+                
+           
+    #         return Response({"message": 'you disliked the report' , "data": serializer.data },  status=status.HTTP_201_CREATED)
             
-        else:
-            report.noOfLikes.add(request.user.id)
-            return Response({"message": 'you liked the report'}, status=status.HTTP_201_CREATED)
+    #     else:
+    #         reportserializer = ReportLikeSerializer(report, data=request.data)
+            
+    #         if reportserializer.is_valid():
+    #             reportserializer.save()
+    #             serializer = ReportLikeSerializer(report)
+    #             report.noOfLikes.add(request.user.id)
+                
+    #         return Response({"message": 'you liked the report' ,  "data": serializer.data}, status=status.HTTP_201_CREATED)
         
 
 class ChartDataView(APIView):

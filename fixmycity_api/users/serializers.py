@@ -14,7 +14,7 @@ class RegistorUserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         role = Role.objects.get(id=3)
-        user = User(first_name= validated_data['first_name'], last_name= validated_data['last_name'], phone_number= validated_data['phone_number'] ,ProfileImage = validated_data['ProfileImage'], roles = role )
+        user = User(first_name= validated_data['first_name'], last_name= validated_data['last_name'], phone_number= validated_data['phone_number'] , roles = role )
         user.save()
         return user
     

@@ -59,6 +59,22 @@ class MyReportUpdateSerializer(serializers.ModelSerializer):
         fields = ('tag' , 'sector'  , 'description')
         read_only_fields = ("id" ,"image",  "postedAt" ,"distance" , "like_count" , "user", "location"  )
 
+class ReportLikeSerializer(serializers.ModelSerializer):
+   class Meta:
+        model = Report
+        fields = ('likeornot',)
+        read_only_fields = ("id",)
+
+
+
+
+
+
+
+
+
+
+
 # class LocationSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = Location

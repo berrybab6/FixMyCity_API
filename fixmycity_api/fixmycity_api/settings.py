@@ -66,9 +66,15 @@ INSTALLED_APPS = [
     'reports',
     'announcment',
     'django_filters',
+    'livereload',
     # 'django_rest_passwordreset',
     
 ]
+
+MIDDLEWARE_CLASSES = (
+   
+    'livereload.middleware.LiveReloadScript',
+)
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -80,6 +86,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+   
 ]
 
 REST_FRAMEWORK  = {
