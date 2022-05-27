@@ -256,3 +256,15 @@ class ChangePasswordSerializer(serializers.Serializer):
     model = User
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
+    
+    
+    
+
+
+class UpdateAdminSerializer(serializers.ModelSerializer):
+    ProfileImage = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
+    class Meta:
+        model = User
+        fields = ('email', 'first_name' , 'last_name' , 'phone_number' , 'ProfileImage',)
+        read_only_fields = ('id' ,)  
+        

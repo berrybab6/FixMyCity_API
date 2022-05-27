@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.gis.geos import GEOSGeometry
 from rest_framework.response import Response
 from django.http import JsonResponse
-from .serializers import  InactiveUser, InvalidUser, ResetPasswordEmailRequestSerializer,RoleSerializer, LoginSerializer, SectorAdminSerializer, SectorSerializer, SetNewPasswordSerializer, UserSerializer, LoginSectorAdminSerializer , EmailVerificationSerializer, LoginSectorAdminSerializer , LoginSuperAdminSerializer, ChangePasswordSerializer
+from .serializers import  InactiveUser, InvalidUser, ResetPasswordEmailRequestSerializer,RoleSerializer, LoginSerializer, SectorAdminSerializer, SectorSerializer, SetNewPasswordSerializer, UpdateAdminSerializer, UserSerializer, LoginSectorAdminSerializer , EmailVerificationSerializer, LoginSectorAdminSerializer , LoginSuperAdminSerializer, ChangePasswordSerializer
 from .utils import Utils
 from .models import Role, Sector, User
 from .utils import Utils
@@ -627,6 +627,35 @@ class ChangePasswordView(generics.UpdateAPIView):
             return Response(response)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    
+
+
+class EditAdminProfile(APIView):
+    permission_classes =  [IsAuthenticated, IsSectorAdmin]
+    serializer_class = UpdateAdminSerializer
+ 
+    @swagger_auto_schema(request_body=UpdateAdminSerializer)
+
+    def patch(self, request, format=None):
+        try:
+            # exist then update
+            profile = User.objects.get(id=request.user.id)
+            serializer = UpdateAdminSerializer(profile, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+    
+    
+
+
+
+    
 
 
         

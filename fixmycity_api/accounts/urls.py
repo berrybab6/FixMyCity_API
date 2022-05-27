@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 
 from django.urls import include
 
-from .views import ChangePasswordView, EditProfile, LoginView, PasswordTokenCheckAPI, RegisterView, LoginSerializer, RequestPasswordResetEmail, SetNewPasswordAPIView, TestView,SectorAPIView , LoginSectorAdminView , VerifyEmail , LoginSectorAdmin , LoginSuperAdmin
+from .views import ChangePasswordView, EditAdminProfile, EditProfile, LoginView, PasswordTokenCheckAPI, RegisterView, LoginSerializer, RequestPasswordResetEmail, SetNewPasswordAPIView, TestView,SectorAPIView , LoginSectorAdminView , VerifyEmail , LoginSectorAdmin , LoginSuperAdmin
 
 
 
@@ -36,6 +36,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     path('login_admin/', LoginSectorAdmin.as_view(), name='login_admin'),
+    path('edit_profile/', EditAdminProfile.as_view(), name='edit_admin_profile'),
 #     path('login_superadmin/', LoginSuperAdmin.as_view(),   name='login_super_admin'),
    
     path('register/', RegisterView.as_view()),
