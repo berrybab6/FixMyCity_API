@@ -73,12 +73,18 @@ class RegisterView(APIView):
     # @swagger_auto_schema(request_body=LoginSerializer)
     def post(self,request):
         user = request.data
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        user_data = serializer.data
-        user = User.objects.get(email=user_data['email'])
+        sector = request.data.get('sector', False)
         email = request.data['email']
+        print("sector is", sector)
+        
+        if(sector and email):
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            user_data = serializer.data
+        
+        user = User.objects.get(email=user_data['email'])
+        
         print(user)
         # token = get_random_string(length=32)
         token = RefreshToken.for_user(user).access_token

@@ -139,6 +139,8 @@ class ReportAPIView(viewsets.ModelViewSet):
         else:
             return JsonResponse({"Me":"Hello"})
     
+    
+    
     def create(self, request, **kwargs):
         latitude = request.data['latitude']
         longtiude = request.data['longtiude']
@@ -148,45 +150,109 @@ class ReportAPIView(viewsets.ModelViewSet):
         # lin_reg_model = ReportsConfig.model
         # image_predicted = lin_reg_model.predict(image)
         if image:
-            serializer_obj = ReportSerializer(data=request.data)
+            user_c=self.request.user
+            if user_c and user_c.active:
+                serializer_obj = ReportSerializer(data=request.data)
 
-            if serializer_obj.is_valid():
-                serializer_obj.save(location=pnt , spamStatus=True)
+                if serializer_obj.is_valid():
+                    serializer_obj.save(location=pnt , spamStatus=True)
 
-                img = serializer_obj.data["image"]
-                print("IMG",img)
-                spam = self.send_spam_image(img)
-                print("sPAMMMMm:",spam)
-                image_predicted = spam
-                if image_predicted == 1:
-                    # serializer_obj = ReportSerializer(data=request.data)
-                    if serializer_obj.is_valid():
-                        # serializer_obj.save(location=pnt , spamStatus=True)
-                        # serializer_obj.data["spamStatus"] = True
-                        print("IS___Spam",serializer_obj.data["id"])
-                        id = serializer_obj.data["id"]
-                        report = Report.objects.get(id=id)
-                        
-                        report.spamStatus= True
-                        report.save()
-                        user = User.objects.get(id=report.user.id)
-                        if user: 
-                            user.count_strike = user.count_strike+1
-                            if user.count_strike >= 3:
-                                user.active = False
-                            else:
-                                pass
-                            user.save() 
-                        print("Statusss-",report.spamStatus)
+                    img = serializer_obj.data["image"]
+                    print("IMG",img)
+                    spam = self.send_spam_image(img)
+                    print("sPAMMMMm:",spam)
+                    image_predicted = spam
+                    if image_predicted == 1:
+                        # serializer_obj = ReportSerializer(data=request.data)
+                        if serializer_obj.is_valid():
+                            # serializer_obj.save(location=pnt , spamStatus=True)
+                            # serializer_obj.data["spamStatus"] = True
+                            print("IS___Spam",serializer_obj.data["id"])
+                            id = serializer_obj.data["id"]
+                            report = Report.objects.get(id=id)
+                            
+                            report.spamStatus= True
+                            report.save()
+                            user = User.objects.get(id=report.user.id)
+                            if user: 
+                                user.count_strike = user.count_strike+1
+                                if user.count_strike >= 3:
+                                    user.active = False
+                                else:
+                                    pass
+                                user.save() 
+                            print("Statusss-",report.spamStatus)
+                            return Response({"detail": 'Data Created'}, status=status.HTTP_200_OK)
+                        return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+                    elif image_predicted==0:
+                        # serializer_obj = ReportSerializer(data=request.data , )
+                        # if serializer_obj.is_valid():
+                            # serializer_obj.save(location=pnt , spamStatus=False)
+                            
                         return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
-                    return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
-                elif image_predicted==0:
-                    # serializer_obj = ReportSerializer(data=request.data , )
-                    # if serializer_obj.is_valid():
-                        # serializer_obj.save(location=pnt , spamStatus=False)
-                        
-                    return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
                     # return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)  
+            else:
+                return JsonResponse({"message":"User Has Been Banned"},status=status.HTTP_403_FORBIDDEN)
+    
+    
+    
+    
+    
+    
+    # def create(self, request, **kwargs):
+    #     latitude = request.data['latitude']
+    #     longtiude = request.data['longtiude']
+    #     pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude))
+       
+    #     image = request.data['image']
+    #     # lin_reg_model = ReportsConfig.model
+    #     # image_predicted = lin_reg_model.predict(image)
+    #     if image:
+    #         serializer_obj = ReportSerializer(data=request.data)
+
+    #         if serializer_obj.is_valid():
+    #             serializer_obj.save(location=pnt , spamStatus=True)
+
+    #             img = serializer_obj.data["image"]
+    #             print("IMG",img)
+    #             spam = self.send_spam_image(img)
+    #             print("sPAMMMMm:",spam)
+    #             image_predicted = spam
+    #             if image_predicted == 1:
+    #                 # serializer_obj = ReportSerializer(data=request.data)
+    #                 if serializer_obj.is_valid():
+    #                     # serializer_obj.save(location=pnt , spamStatus=True)
+    #                     # serializer_obj.data["spamStatus"] = True
+    #                     print("IS___Spam",serializer_obj.data["id"])
+    #                     id = serializer_obj.data["id"]
+    #                     report = Report.objects.get(id=id)
+                        
+    #                     report.spamStatus= True
+    #                     report.save()
+    #                     user = User.objects.get(id=report.user.id)
+    #                     if user: 
+    #                         user.count_strike = user.count_strike+1
+    #                         if user.count_strike >= 3:
+    #                             user.active = False
+    #                         else:
+    #                             pass
+    #                         user.save() 
+    #                     print("Statusss-",report.spamStatus)
+    #                     return Response({"detail": 'you created spam report' }, status=status.HTTP_200_OK)
+    #                 return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+    #             elif image_predicted==0:
+    #                 id = serializer_obj.data["id"]
+    #                 report = Report.objects.get(id=id)
+                        
+    #                 report.spamStatus= False
+    #                 report.save()
+                    
+    #                 # serializer_obj = ReportSerializer(data=request.data , )
+    #                 # if serializer_obj.is_valid():
+    #                     # serializer_obj.save(location=pnt , spamStatus=False)
+                        
+    #                 return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
+    #                 # return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)  
     
     # def create(self, request, **kwargs):
         
