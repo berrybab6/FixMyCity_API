@@ -59,12 +59,13 @@ class SectorAdminSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id','email']
+        fields = ['id','email' , 'sector']
         
     def create(self, validated_data):
         role = Role.objects.get(id=2)
-        # print("Hellp",validated_data['sector'])
-        user = User(email= validated_data['email'],roles = role , sector = Sector(id='2') )
+        print("Hellp",validated_data['email'])
+        print("Hellp",validated_data['sector'])
+        user = User(email= validated_data['email'],roles = role , sector=validated_data['sector'])
         user.save()
         return user
 

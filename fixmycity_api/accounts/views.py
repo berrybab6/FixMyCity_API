@@ -73,7 +73,7 @@ class RegisterView(APIView):
     # @swagger_auto_schema(request_body=LoginSerializer)
     def post(self,request):
         user = request.data
-        sector = request.data.get('sector', False)
+        sector = request.data['sector']
         email = request.data['email']
         print("sector is", sector)
         
