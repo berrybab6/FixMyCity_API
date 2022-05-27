@@ -397,7 +397,7 @@ class RemoveFromBanUser(APIView):
             # exist then update
             profile = User.objects.get(id=pk)
             if profile and profile.roles.id == 3:
-                profile.active = True
+                profile.is_banned = True
                 profile.save()
                 # profile.count_strike = profile.count_strike -1
 
