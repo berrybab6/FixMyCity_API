@@ -41,3 +41,4 @@ urllib3==1.26.9
 whitenoise==6.0.0
 joblib==1.1.0
 livereload==2.6.3
+httplib2==0.20.4
