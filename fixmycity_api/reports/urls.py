@@ -19,6 +19,6 @@ urlpatterns = [
 
     path('chart' ,ChartDataView.as_view()),
     path('transfer/', views.ReportTransfer.as_view()),
-    path("report_status/<int:pk>/",ReportStatusView.as_view())
+    path("report_status/",ReportStatusView.as_view())
 
 ]
