@@ -407,7 +407,7 @@ from geopy.geocoders import Nominatim
 class ReportTransfer(APIView):
     queryset = [Sector.objects.all(), Report.objects.all()]
     serializer_classes = [ SectorSerializer, ReportSerializer,]
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (IsAuthenticated,)
     # queryset = Report.objects.all().order_by("-postedAt")
     def get_queryset(self):
         report = Report.objects.all().order_by("-postedAt")
@@ -445,18 +445,30 @@ class ReportTransfer(APIView):
                 return Response({"message": 'NO Nearby Sector Found'})
         else:
             return Response({"message": 'NO report Found'})
+    def get_permissions(self):
+        """Set custom permissions for each action."""
+        if self.action in [ 'partial_update', 'destroy', 'getreportbasedonSectorName' , 'getreportbasedonSectorNameandLocation']:
+            self.permission_classes = [IsAuthenticated, IsSectorAdmin]
+        elif self.action in ['list' , 'retrieve']:
+            self.permission_classes = [IsAuthenticated  ]
+        elif self.action in ['create']:
+            self.permission_classes = [IsAuthenticated , IsCustomUser ]
+        return super().get_permissions()
+    
+    
         
 class ReportStatusView(APIView):
     # permission_classes = (IsAuthenticated, IsCustomUser)
     queryset = [Sector.objects.all(), User.objects.all(), Report.objects.all()]
     serializer_classes = [ SectorAdminSerializer, SectorSerializer, ReportSerializer, LocationSerializer]
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
     
-    def get(self, request, pk=None):
+    def get(self, request):
         # id = self.kwargs.get("pk")
         
         role = Role.objects.get(id=2)
-        sector_user = User.objects.get(id=pk,roles=role)
+        sector_user = self.request.user
+
         if sector_user:
             # ser = SectorAdminSerializer(sector_user)
             sector_branch = sector_user.sector
@@ -470,23 +482,11 @@ class ReportStatusView(APIView):
                 resolved_report_count = Report.objects.filter(state=True, sector=sector_branch).count()
                 spam_report_count = Report.objects.filter(spamStatus=True,sector=sector_branch).count()
 
-                sectro = Sector.objects.get(id=7)
-                sec_loc = LocationSerializer(sectro)
-                lela2 = sectro.location.coords[1]
-                lela = round(lela2, 6)
-                # geolocator = Nominatim(user_agent="geoapiExercises")
-              
-                # Latitude = "12.211180"
-                # Longitude = "34.804687"
-  
-                # location = geolocator.reverse(Latitude+","+Longitude)
-                # if location:
-                #     address = location.raw['address']
-                #     city = address.get('city', '')
-                #     state = address.get('state', '')
-                #     country = address.get('country', '')
-                #     return JsonResponse({"loc":sec_loc.data,"country":country, "city":city, "lela":lela})
-                # ser = SectorSerializer(branches, many=True)
+                # sectro = Sector.objects.get(id=7)
+                # sec_loc = LocationSerializer(sectro)
+                # lela2 = sectro.location.coords[1]
+                # lela = round(lela2, 6)
+
                 return JsonResponse({"sectors":ser.data,"count":{"branch_count":[branches,"Branch Number"], "active_report":[active_report_count,"Active Reports"],"resolved_report":[resolved_report_count,"Resolved Reports"], "spam_report":[spam_report_count,"Spam Reports"]}})
             else:
                 return JsonResponse({"error":"NO Sectors with this account"})
