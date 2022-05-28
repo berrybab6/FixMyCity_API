@@ -2,14 +2,11 @@ from dis import dis
 from math import fabs
 import re
 from tracemalloc import start
-
 from turtle import distance
 import requests
 from rest_framework.views import APIView
 from .models import F, Report
 from .serializers import LocationSerializer, ReportLikeSerializer, ReportSerializer ,ReportUpdateSerializer, MyReportUpdateSerializer
-
-
 from django.http import JsonResponse
 from accounts.models import Role, Sector, User
 from accounts.serializers import SectorAdminSerializer, SectorSerializer
@@ -116,7 +113,7 @@ class ReportAPIView(viewsets.ModelViewSet):
     def send_spam_image(self,image):
         if image:
             
-            url = 'http://192.168.0.7:8001/api/imageClassify/'
+            url = 'http://192.168.8.104:8001/api/imageClassify/'
             start_time = time.time()
             while True:
                 try:
@@ -173,10 +170,10 @@ class ReportAPIView(viewsets.ModelViewSet):
 
                         img = serializer_obj.data["image"]
                         print("IMG",img)
-                        # spam = self.send_spam_image(img)
+                        spam = self.send_spam_image(img)
                         # print("sPAMMMMm:",spam)
                         image_predicted = 1
-                        # image_predicted = spam
+                        image_predicted = spam
                         if image_predicted == 1:
                             # serializer_obj = ReportSerializer(data=request.data)
                             if serializer_obj.is_valid():
@@ -201,17 +198,28 @@ class ReportAPIView(viewsets.ModelViewSet):
                             return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
                         elif image_predicted==0:
                             # serializer_obj = ReportSerializer(data=request.data , )
-                            # if serializer_obj.is_valid():
+                            if serializer_obj.is_valid():
                                 # serializer_obj.save(location=pnt , spamStatus=False)
+                                id = serializer_obj.data["id"]
+                                report = Report.objects.get(id=id)
                                 
-                            return Response({"detail": 'Data Created'}, status=status.HTTP_201_CREATED)
+                                report.spamStatus= True
+                                report.save()
+                                return Response({"detail": 'NonSpam Data Created'}, status=status.HTTP_201_CREATED)
+                            else:
+                                return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
                         else:
                             return Response({"error": 'Unable to make Connection'}, status=status.HTTP_201_CREATED)
 
                     else:
                         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)  
+                else:
+                    return JsonResponse({"message":"User Has Been Banned"},status=status.HTTP_403_FORBIDDEN)
+                
             else:
-                return JsonResponse({"message":"User Has Been Banned"},status=status.HTTP_403_FORBIDDEN)
+                return  JsonResponse({"error":"User Doesnot Exist"},status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return  JsonResponse({"error":"Image is not UPloaded"},status=status.HTTP_400_BAD_REQUEST)
     
     
     
@@ -391,6 +399,7 @@ class ReportAPIView(viewsets.ModelViewSet):
         elif self.action in ['create']:
             self.permission_classes = [IsAuthenticated , IsCustomUser ]
         return super().get_permissions()
+    
     
     
 
