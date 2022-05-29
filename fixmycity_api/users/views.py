@@ -387,7 +387,7 @@ class EditProfile(APIView):
     
   
 class RemoveFromBanUser(APIView):
-    permission_classes =  [IsSuperAdmin]
+    permission_classes =  [IsAuthenticated , IsSuperAdmin]
     serializer_class = RemoveFromBanSerializer
     queryset = User.objects.all()
     @swagger_auto_schema(request_body=RemoveFromBanSerializer)
@@ -397,15 +397,17 @@ class RemoveFromBanUser(APIView):
             # exist then update
             profile = User.objects.get(id=pk)
             if profile and profile.roles.id == 3:
-                profile.is_banned = True
+                profile.is_banned = False
+                profile.count_strike = 0
                 profile.save()
-                # profile.count_strike = profile.count_strike -1
+                # 
 
                 serializer = RemoveFromBanSerializer(profile)
             
                 return Response(serializer.data)
             else:
-                return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+                print(serializer.errors)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 

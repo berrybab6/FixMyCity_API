@@ -49,16 +49,16 @@ class ReportAPIView(viewsets.ModelViewSet):
     filterset_fields = ('id' , 'state' , 'status' , 'spamStatus',)
     search_fields = ('tag' , 'description' , 'user__first_name', 'user__last_name', 'sector__district_name' , 'user__phone_number')
     # ordering = ('noOfLikes',)
-    queryset = [Report.objects.all().order_by("-postedAt"), User.objects.all()]
+    queryset = [Report.objects.all().order_by("-updatedAt"), User.objects.all()]
     def get_queryset(self):
-        report = Report.objects.all().order_by("-postedAt")
+        report = Report.objects.all().order_by("-updatedAt")
         return report
     
     @action(detail=False)
     def getreportbasedonSectorName(self , request):
         sector_name=self.request.user.sector
         print(sector_name)
-        report = Report.objects.filter(sector__district_name=sector_name).order_by("-postedAt")
+        report = Report.objects.filter(sector__district_name=sector_name).order_by("-updatedAt")
         serializer = ReportSerializer(report , many= True)
         # serializer = ReportSerializer(self.filter_queryset(self.get_queryset()), many=True,)
         return Response(serializer.data)
@@ -71,7 +71,7 @@ class ReportAPIView(viewsets.ModelViewSet):
         print(sector_location)
         qs = super().get_queryset()
         pnt = sector_location
-        qs = qs.annotate(distance= Distance('location' , pnt)).filter(distance__lte=3000 ,sector__district_name=sector_name ).order_by("-postedAt")
+        qs = qs.annotate(distance= Distance('location' , pnt)).filter(distance__lte=3000 ,sector__district_name=sector_name ).order_by("-updatedAt")
         serializer = ReportSerializer(self.filter_queryset(self.get_queryset()), many=True,)
         # serializer = ReportSerializer(qs , many= True)
         return Response(serializer.data)
@@ -113,7 +113,7 @@ class ReportAPIView(viewsets.ModelViewSet):
     def send_spam_image(self,image):
         if image:
             
-            url = 'http://192.168.8.104:8001/api/imageClassify/'
+            url = 'http://192.168.0.7:8001/api/imageClassify/'
             start_time = time.time()
             while True:
                 try:
@@ -203,7 +203,7 @@ class ReportAPIView(viewsets.ModelViewSet):
                                 id = serializer_obj.data["id"]
                                 report = Report.objects.get(id=id)
                                 
-                                report.spamStatus= True
+                                report.spamStatus= False
                                 report.save()
                                 return Response({"detail": 'NonSpam Data Created'}, status=status.HTTP_201_CREATED)
                             else:
@@ -313,7 +313,7 @@ class ReportAPIView(viewsets.ModelViewSet):
 
     
     def list(self, request, *args, **kwargs):
-        report = Report.objects.all().order_by("-postedAt")
+        report = Report.objects.all().order_by("-updatedAt")
         # serializer = ReportSerializer(report , many= True)
         serializer = ReportSerializer(self.filter_queryset(self.get_queryset()), many=True,)
         
@@ -324,7 +324,7 @@ class ReportAPIView(viewsets.ModelViewSet):
         if latitude and longtiude:
             pnt = GEOSGeometry('POINT(%s %s)' % (longtiude, latitude) , srid=4326)
             distance = Distance('location' , pnt)
-            qs = qs.annotate(distance= Distance('location' , pnt)).filter(distance__lte=3000).order_by("-postedAt")
+            qs = qs.annotate(distance= Distance('location' , pnt)).filter(distance__lte=3000).order_by("-updatedAt")
             serializer = ReportSerializer(qs , many= True)
         return Response(serializer.data)
         
@@ -349,7 +349,7 @@ class ReportAPIView(viewsets.ModelViewSet):
                 if User.objects.filter(id=report.user.id).exists():
                     user = User.objects.get(id=report.user.id)
                     user.count_strike = user.count_strike + 1
-                    if user.count >=3:
+                    if user.count_strike >=3:
                         user.is_banned = True
                     user.save()
             elif (not (spamStat == is_spam)):
@@ -407,10 +407,10 @@ from geopy.geocoders import Nominatim
 class ReportTransfer(APIView):
     queryset = [Sector.objects.all(), Report.objects.all()]
     serializer_classes = [ SectorSerializer, ReportSerializer,]
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsSectorAdmin)
     # queryset = Report.objects.all().order_by("-postedAt")
     def get_queryset(self):
-        report = Report.objects.all().order_by("-postedAt")
+        report = Report.objects.all().order_by("-updatedAt")
         sector = Sector.objects.all()
         return [report,sector]
     def put(self, request, *args, **kwargs):
@@ -445,15 +445,15 @@ class ReportTransfer(APIView):
                 return Response({"message": 'NO Nearby Sector Found'})
         else:
             return Response({"message": 'NO report Found'})
-    def get_permissions(self):
-        """Set custom permissions for each action."""
-        if self.action in [ 'partial_update', 'destroy', 'getreportbasedonSectorName' , 'getreportbasedonSectorNameandLocation']:
-            self.permission_classes = [IsAuthenticated, IsSectorAdmin]
-        elif self.action in ['list' , 'retrieve']:
-            self.permission_classes = [IsAuthenticated  ]
-        elif self.action in ['create']:
-            self.permission_classes = [IsAuthenticated , IsCustomUser ]
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     """Set custom permissions for each action."""
+    #     if self.action in [ 'partial_update', 'destroy', 'getreportbasedonSectorName' , 'getreportbasedonSectorNameandLocation']:
+    #         self.permission_classes = [IsAuthenticated, IsSectorAdmin]
+    #     elif self.action in ['list' , 'retrieve']:
+    #         self.permission_classes = [IsAuthenticated  ]
+    #     elif self.action in ['create']:
+    #         self.permission_classes = [IsAuthenticated , IsCustomUser ]
+    #     return super().get_permissions()
     
     
         
@@ -610,12 +610,12 @@ class MyReportAPIView(viewsets.ModelViewSet):
     http_method_names = ['get', 'patch']
     serializer_class = ReportSerializer
     pagination_class = PageNumberPagination
-    queryset = Report.objects.all().order_by("-postedAt")
+    queryset = Report.objects.all().order_by("-updatedAt")
     
     
      
     def list(self, request, *args, **kwargs):
-        report = Report.objects.filter(user=self.request.user).order_by("-postedAt")
+        report = Report.objects.filter(user=self.request.user).order_by("-updatedAt")
         serializer = ReportSerializer(report , many= True)
         return Response(serializer.data)
     

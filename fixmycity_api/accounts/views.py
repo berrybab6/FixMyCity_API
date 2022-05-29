@@ -647,7 +647,8 @@ class EditAdminProfile(APIView):
                 serializer.save()
                 return Response(serializer.data)
             else:
-                return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+                print("user is",serializer.errors ),
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
     
