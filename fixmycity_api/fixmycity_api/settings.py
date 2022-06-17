@@ -17,6 +17,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+from firebase_admin import initialize_app
 # import dj_database_url
 
 
@@ -67,6 +68,7 @@ INSTALLED_APPS = [
     'announcment',
     'django_filters',
     'livereload',
+    'fcm_django',
     # 'django_rest_passwordreset',
     
 ]
@@ -88,6 +90,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
    
 ]
+
+FIREBASE_APP = initialize_app()
+
+
+FCM_DJANGO_SETTINGS = {
+    "FCM_SERVER_KEY": "AAAATl2RT6g:APA91bHQiwy7RbhLsnXlkgnZNAYFCvpfMbCf2VRL0NOtkx7Ai40eUtL-niMmOlSWpuW6j9bnipf-p6-3iGKV5O0F5Y5gCNUCunibjJf4glFoT504RaW_JREQxoMRc3irveKQ9k20v3wH",
+    # true if you want to have only one active device per registered user at a time
+    # default: False
+}
 
 REST_FRAMEWORK  = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -160,6 +171,7 @@ DATABASES = {
 # }
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CORS_ALLOWED_ORIGINS = [
+    "https://82d4-197-156-118-192.ngrok.io",
     "http://localhost:3002",
     "https://fixmycity-24.herokuapp.com",
     "https://fixmycity5-24.herokuapp.com",
@@ -182,6 +194,7 @@ CORS_ALLOWED_ORIGINS = [
     
 ]
 CSRF_TRUSTED_ORIGINS = [
+    "https://82d4-197-156-118-192.ngrok.io",
     "https://2a06-197-156-86-124.ngrok.io",
     "https://294a-197-156-77-127.ngrok.io",
     "http://localhost:3002",
@@ -329,5 +342,20 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'wubshetgenetu21@gmail.com'
 EMAIL_HOST_PASSWORD = 'fslgeuvbslfhakax'
+
+
+
+
+
+cred = '/home/mk7lab/alarm-web/alarm-web/serviceAccountKey.json'
+googleApi = '/home/mk7lab/alarm-web/alarm-web/pc-api-6299487041258950973-975-4d405e97b77b.json'
+
+
+
+
+try:
+    from .local_settings import *
+except ImportError:
+    print("No local setting found, in production")
 
 

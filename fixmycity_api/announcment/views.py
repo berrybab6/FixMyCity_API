@@ -92,12 +92,15 @@ class AnnouncementAPIView(viewsets.ModelViewSet):
         
         
     def partial_update(self, request, pk=None):
+        print("inside update")
         id = self.kwargs.get("pk")
+        
         try:
             announcment = Announcement.objects.filter(sectoradmin=self.request.user).get(id=id)
             anouncmentserializer = AnnouncementSerializer(announcment, data=request.data, partial=True)
             if anouncmentserializer.is_valid():
                 anouncmentserializer.save()
+                print("updated succesfully")
                 return Response({"Detail": "anouncment updated succefully!"}, status=status.HTTP_200_OK)
             return Response(anouncmentserializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Announcement.DoesNotExist:
@@ -110,7 +113,7 @@ class AnnouncementAPIView(viewsets.ModelViewSet):
     def destroy(self, request, pk=None):
         id = self.kwargs.get("pk")
         try:
-            announcment = Announcement.objects.filter(sectoradmin__sector_user=self.request.user).get(pk=id)
+            announcment = Announcement.objects.filter(sectoradmin=self.request.user).get(pk=id)
             announcment.delete()
             return Response(  {"Detail" : "anouncment deleted succefully"} , status=status.HTTP_204_NO_CONTENT)
         except Announcement.DoesNotExist:

@@ -19,6 +19,7 @@ import requests
 import json
 import time
 import os
+from fcm_django.models import FCMDevice
 connection_timeout = 30 # seconds
 
 from rest_framework import status , filters
@@ -32,6 +33,9 @@ from django.contrib.gis.db.models.functions import Distance
 from .apps import ReportsConfig
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
+from pyfcm import FCMNotification
+from firebase_admin.messaging import Message, Notification
+
 
 import requests
 
@@ -113,7 +117,7 @@ class ReportAPIView(viewsets.ModelViewSet):
     def send_spam_image(self,image):
         if image:
             
-            url = 'http://192.168.0.7:8001/api/imageClassify/'
+            url = 'http://192.168.251.150:8001/api/imageClassify/'
             start_time = time.time()
             while True:
                 try:
@@ -631,6 +635,219 @@ class MyReportAPIView(viewsets.ModelViewSet):
         except Report.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
     
+    
+    
+    
+    
+    
+class sendNotifications(APIView): 
+    permission_classes = (permissions.AllowAny,)
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            title = "hello"
+            desc = "hu"
+            action = None
+        try:
+            action = request.POST['Action']
+        except:
+            print('action is empty')
+        # upload image
+        isEmpty = True
+        # try:
+        #     img = request.FILES['image']
+        #     isEmpty = False
+
+        #     try:
+        #         imageObject = notification_image.objects.get(id=1)
+        #         imageObject.image = img
+        #         # save img
+        #         imageObject.save()
+        #         print('update')
+        #     except notification_image.DoesNotExist:
+        #         print('create')
+        #         notification_image.objects.create(image=img)
+        # except:
+        #     print('')
+
+            # get image
+        print(isEmpty)
+
+        # image = notification_image.objects.all()
+        # all token
+        # tokens = user_push_token.objects.all()
+        # all token array
+        alltokens = []
+        # image
+        push_img = {}
+        # for tokenlist in tokens:
+        #     alltokens.append(tokenlist.token)
+        # if image:
+        #     push_img = {'image': image[0].image.url}
+        # FCMManager.sendPush(title, desc, alltokens, push_img)
+        if isEmpty:
+            data_message = {
+                "title": title,
+                "body": desc,
+                "action": action,
+                "image": None,
+            }
+        # else:
+        #     data_message = {
+        #         "title": title,
+        #         "body": desc,
+        #         "action": action,
+        #         "image": '{}'.format(request._current_scheme_host + image[0].image.url),
+        #     }
+
+        # print(image[0].image.url)
+        print(data_message)
+        push_service = FCMNotification(
+            api_key="AAAA8F809G4:APA91bHwmFnvJmaQySM7oZSivwiDm_MYHdJTLruZPLNL2zXfzR71NjBSe6mbpozAvsFEupwL8fsfZGt-GSPuMCdwuizHsNUwAgk4JW20BBu6ZQwjDj3DK5aKRxrdCu3InKy5_Ro4_yq1")
+
+        try:
+            check = request.POST['check']
+            tokens = request.POST['token']
+            registration_ids = [tokens]
+            print(check, tokens)
+            result = push_service.multiple_devices_data_message(registration_ids=registration_ids,
+                                                                data_message=data_message)
+            print(result)
+            return Response({"detail": "Data Updated!"}, status=status.HTTP_200_OK)
+        except:
+            print('not check')
+
+        registration_ids = alltokens
+        result = push_service.multiple_devices_data_message(registration_ids=registration_ids,
+                                                            data_message=data_message)
+        print(result)
+
+        return Response({"detail": "Data Updated!"}, status=status.HTTP_200_OK)
+    # else:
+    # #   allcountry =  push_token_countryList.objects.all()
+    #   return Response({"detail": "Data Updated!"}, status=status.HTTP_200_OK)
+
+
+
+
+
+def notif(request):
+    FCMDevice.objects.send_message(Message(data=dict()))
+# Note: You can also combine the data and notification kwarg
+    FCMDevice.objects.send_message(
+    Message(notification=Notification(title="title", body="body", image="image_url"))
+     )
+    device = FCMDevice.objects.filter(1==1)
+    device.send_message(Message(...))
+    return JsonResponse({'status':'OK'})
+    # devices = FCMDevice.objects.filter(user__phone_number='+251962782800')
+    # print("here", devices)
+    # for device in devices:
+    #    device.send_message(title="Title", body="Body", data={"test": "test"})
+    #    print(devices)
+    #    break
+
+    # return JsonResponse({'status':'OK'})
+
+
+
+  
+
+         
+    
+    
+         
+      
+    
+    
+    
+    
+    
+    
+    
+# def sendNotifications(request):
+#     if request.method == 'POST':
+#         title = request.POST['Title']
+#         desc = request.POST['Descriptions']
+#         action = None
+#         try:
+#             action = request.POST['Action']
+#         except:
+#             print('action is empty')
+#         # upload image
+#         isEmpty = True
+#         # try:
+#         #     img = request.FILES['image']
+#         #     isEmpty = False
+
+#         #     try:
+#         #         imageObject = notification_image.objects.get(id=1)
+#         #         imageObject.image = img
+#         #         # save img
+#         #         imageObject.save()
+#         #         print('update')
+#         #     except notification_image.DoesNotExist:
+#         #         print('create')
+#         #         notification_image.objects.create(image=img)
+#         # except:
+#         #     print('')
+
+#             # get image
+#         print(isEmpty)
+
+#         # image = notification_image.objects.all()
+#         # all token
+#         # tokens = user_push_token.objects.all()
+#         # all token array
+#         alltokens = []
+#         # image
+#         push_img = {}
+#         # for tokenlist in tokens:
+#         #     alltokens.append(tokenlist.token)
+#         # if image:
+#         #     push_img = {'image': image[0].image.url}
+#         # FCMManager.sendPush(title, desc, alltokens, push_img)
+#         if isEmpty:
+#             data_message = {
+#                 "title": title,
+#                 "body": desc,
+#                 "action": action,
+#                 "image": None,
+#             }
+#         # else:
+#         #     data_message = {
+#         #         "title": title,
+#         #         "body": desc,
+#         #         "action": action,
+#         #         "image": '{}'.format(request._current_scheme_host + image[0].image.url),
+#         #     }
+
+#         # print(image[0].image.url)
+#         print(data_message)
+#         push_service = FCMNotification(
+#             api_key="AAAA8F809G4:APA91bHwmFnvJmaQySM7oZSivwiDm_MYHdJTLruZPLNL2zXfzR71NjBSe6mbpozAvsFEupwL8fsfZGt-GSPuMCdwuizHsNUwAgk4JW20BBu6ZQwjDj3DK5aKRxrdCu3InKy5_Ro4_yq1")
+
+#         try:
+#             check = request.POST['check']
+#             tokens = request.POST['token']
+#             registration_ids = [tokens]
+#             print(check, tokens)
+#             result = push_service.multiple_devices_data_message(registration_ids=registration_ids,
+#                                                                 data_message=data_message)
+#             print(result)
+#             return Response({"detail": "Data Updated!"}, status=status.HTTP_200_OK)
+#         except:
+#             print('not check')
+
+#         registration_ids = alltokens
+#         result = push_service.multiple_devices_data_message(registration_ids=registration_ids,
+#                                                             data_message=data_message)
+#         print(result)
+
+#         return Response({"detail": "Data Updated!"}, status=status.HTTP_200_OK)
+#     else:
+#     #   allcountry =  push_token_countryList.objects.all()
+#       return Response({"detail": "Data Updated!"}, status=status.HTTP_200_OK)
+
   
 
     
