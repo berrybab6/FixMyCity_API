@@ -9,6 +9,7 @@ class RemoveFromBanSerializer(serializers.ModelSerializer):
         fields = ('is_banned',)
 
 class RegistorUserSerializer(serializers.ModelSerializer):
+    ProfileImage = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
     class Meta:
 
         model = User
@@ -58,6 +59,15 @@ class ValidateOtpSerializer(serializers.ModelSerializer):
     class Meta:
         model = PhoneOTP
         fields = ('phone_number', 'otp')
+        
+        
+        
+class ProfileSerializer(serializers.ModelSerializer):
+    ProfileImage = serializers.ImageField(max_length=None, use_url=True, allow_null=True, required=False)
+   
+    class Meta:
+        model = User
+        fields = ('ProfileImage',)
        
        
       

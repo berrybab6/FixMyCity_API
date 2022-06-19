@@ -1,10 +1,11 @@
 import  random as rand
+from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from accounts.models import User, PhoneOTP
 from rest_framework.views import APIView
-from .serializers import RegistorUserSerializer ,RemoveFromBanSerializer , LoginSerializer ,UpdateUserSerializer , ValidatePhoneSerializer , ValidateOtpSerializer
+from .serializers import ProfileSerializer, RegistorUserSerializer ,RemoveFromBanSerializer , LoginSerializer ,UpdateUserSerializer , ValidatePhoneSerializer , ValidateOtpSerializer
 from rest_framework import permissions, generics, status
 from django.contrib.auth import login
 from accounts.utils import Utils
@@ -27,39 +28,39 @@ def send_otp(phone):
 
     if phone:
         key = rand.randint(999, 9999) 
-        return key
-    #     key2 = " %d " % key
-    #     print( key2)
-    #     url = 'https://api.telda.com.et/api/write/SendOTP'
+        # return key
+        key2 = " %d " % key
+        print( key2)
+        url = 'https://api.telda.com.et/api/write/SendOTP'
 
-    #     request_type = "POST"
-    #     print("this is ", url)
-    #     data = {
-    #         "phone": phone,
-    #         "otp": key2,
-    #         "senderName" : "fixmycity",
-    #         "remark" : "do not share this code with any one"
+        request_type = "POST"
+        print("this is ", url)
+        data = {
+            "phone": phone,
+            "otp": key2,
+            "senderName" : "fixmycity",
+            "remark" : "do not share this code with any one"
             
-    #         } # post data
-    #     print("this is json data", data)
-    #     api_call = requests.request(method='POST', url= url, headers=
-	# 			{
-    #               'Content-Type': 'application/json; charset=UTF-8',
-	# 			  'Authorization': 'Basic TmUZkNo12kiDg2EDymmtRIfRhlaPi+W2MTAwMDk2Mjc4MjgwMA==',
-    #         },
-	# 			json=data)
+            } # post data
+        print("this is json data", data)
+        api_call = requests.request(method='POST', url= url, headers=
+				{
+                  'Content-Type': 'application/json; charset=UTF-8',
+				  'Authorization': 'Basic TmUZkNo12kiDg2EDymmtRIfRhlaPi+W2MTAwMDk2Mjc4MjgwMA==',
+            },
+				json=data)
                 
                 
-    #     print("response code",api_call)
-    #     print(api_call.json())
-    #     if api_call.status_code == 200:
-    #         return key
-    #     else:
-    #         return False
+        print("response code",api_call)
+        print(api_call.json())
+        if api_call.status_code == 200:
+            return key
+        else:
+            return False
        
         
-    # else:
-    #     return False
+    else:
+        return False
 
 
         
@@ -379,6 +380,23 @@ class EditProfile(APIView):
                 return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
         except User.DoesNotExist:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+        
+        
+        
+class Profileview(APIView):
+    permission_classes = (IsAuthenticated, IsCustomUser,)
+    serializer_class = ProfileSerializer
+    queryset = User.objects.all()
+    def get(self, request, pk=None):
+        id = request.user.id
+        user = User.objects.get(id = id)
+        if user:
+            ser = ProfileSerializer(user)
+            return JsonResponse({"user":ser.data})
+        else:
+            JsonResponse({"error":"NO User Found"})
+        
+
     
     
 

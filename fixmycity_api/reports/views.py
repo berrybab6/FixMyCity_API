@@ -117,7 +117,7 @@ class ReportAPIView(viewsets.ModelViewSet):
     def send_spam_image(self,image):
         if image:
             
-            url = 'http://192.168.251.150:8001/api/imageClassify/'
+            url = 'https://fixmycity-ai.herokuapp.com/api/imageClassify/'
             start_time = time.time()
             while True:
                 try:
